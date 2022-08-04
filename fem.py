@@ -1,40 +1,58 @@
 # import xlrd, xlwings
-import os.path  # path.splitext
-from warnings import filterwarnings
-import pandas as pd  # modules: read_excel
-
+import os.path
+import pandas as pd
 import main
+from warnings import filterwarnings
 
 filterwarnings('ignore', category=UserWarning, module='openpyxl')
 
+def find_column_name_row(df: pd.DataFrame):
+    # To skip top rows in file
+    pass
 
-def extract_fem_from_excel_file(file_location, sheet_name, row_to_skip=0):
+def extract_fem_from_excel_file(file_path, sheet_name=0):
+
     list_of_possible_extensions_for_pandas = ['.xlsx', '.xls', '.xlsm', '.xlsb']
-    file_extension = os.path.splitext(file_location)[1].lower()
+    file_name = os.path.basename(file_path)
+    file_extension = os.path.splitext(file_path)[1].lower()
 
-    if file_extension in list_of_possible_extensions_for_pandas:
-        df = pd.read_excel(file_location,
-                           sheet_name=sheet_name,
-                           skiprows=row_to_skip
-                           )
+    if file_extension not in list_of_possible_extensions_for_pandas:
+        return print(f'{file_name} is not correct excel file')
 
-        # Column name to string
-        df.columns = df.columns.astype(str)
-        # Drop "Unnamed" columns
-        df = df.loc[:, ~df.columns.str.contains('^Unnamed', na=False)]
-        # Drop all columns where value is nan
-        df = df.dropna(axis='columns', how='all')
-        # Trim column names
-        df = df.rename(columns=lambda x: x.strip())
-        df = df.applymap(lambda x: x.strip() if isinstance(x, str) else x)
+    sheet_names = pd.ExcelFile(file_path).sheet_names
+
+    if sheet_name in sheet_names:
+        df = pd.read_excel(file_path, sheet_name=sheet_name)
     else:
-        # add file_name
-        df = 'can\'t be read'
+        return print(f'Sheet {sheet_name} not found')
 
     return df
 
+def transform_fem_to_format(df):
+
+    # Column name to string
+    df.columns = df.columns.astype(str)
+    # Drop "Unnamed" columns
+    df = df.loc[:, ~df.columns.str.contains('^Unnamed', na=False)]
+    # Drop all columns where value is nan
+    df = df.dropna(axis='columns', how='all')
+    # Trim column names
+    df = df.rename(columns=lambda x: x.strip())
+    # Trim column names
+    df = df.applymap(lambda x: x.strip() if isinstance(x, str) else x)
+
+def check_format_fem(df):
+    pass
+
+def rename_columns_in_fem(df):
+    pass
+
 
 def melt_year_column(fem_df: pd.DataFrame):
+
+    # Find column where values stored
+
+
     id_vars = ['Программа (ИСУП)',
                'Код проекта (ИСУП)',
                'Название проекта (ИСУП)',
@@ -85,7 +103,6 @@ def apply_unit_to_value(df: pd.DataFrame):
 
     return df
 
-
 def calculations(df: pd.DataFrame):
     df['Затраты'] = df['CAPEX'] + df['OPEX']
     a_index = df['OCF'].cumsum().argmin()
@@ -124,11 +141,6 @@ def flatten_columns(df):
 
 def apply_mapping_to_column(column_name):
     # Сделать проверку по методу из почты (Родион)
-    pass
-
-
-def find_column_name_row(df: pd.DataFrame):
-    # To skip top rows in file
     pass
 
 
