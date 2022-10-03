@@ -1,4 +1,4 @@
-import fem
+import func
 import os
 import pandas as pd
 from tqdm import tqdm
@@ -22,12 +22,12 @@ if __name__ == '__main__':
     performed_df = None
     fem_folder = os.path.join(base_location, files_location)
 
-    filelist = fem.list_files_in_folder(fem_folder)
+    filelist = func.list_files_in_folder(fem_folder)
 
     func_list = [
-        fem.drop_columns_with_old_part, fem.transform_fem_to_format, fem.melt_year_column,
-        fem.drop_zeros_and_nan_values, fem.apply_unit_to_value, fem.add_extracting_time_info,
-        fem.tmp
+        func.drop_columns_with_old_part, func.transform_fem_to_format, func.melt_year_column,
+        func.drop_zeros_and_nan_values, func.apply_unit_to_value, func.add_extracting_time_info,
+        func.tmp
                  ]
 
     print('--------------')
@@ -42,7 +42,7 @@ if __name__ == '__main__':
 
         try:
 
-            df = fem.extract_fem_from_excel_file(os.path.join(fem_folder, filename), sheet_name=sheet_name)
+            df = func.extract_fem_from_excel_file(os.path.join(fem_folder, filename), sheet_name=sheet_name)
 
             if df is None:
                 print()
@@ -81,7 +81,7 @@ if __name__ == '__main__':
         if df is None:
             continue
 
-        df = fem.add_edit_time_info(df, fem_folder=fem_folder, filename=filename)
+        df = func.add_edit_time_info(df, fem_folder=fem_folder, filename=filename)
         time.sleep(0.01)
         df['inputfile'] = filename
         time.sleep(0.01)
@@ -110,7 +110,7 @@ if __name__ == '__main__':
     print('File saving')
     print('--------------')
     folder_to_save = os.path.join(base_location, f'fem/loading/{version}/preprocessing')
-    fem.safe_dataframes_to_excel(dataframes=[performed_df, problems],
+    func.safe_dataframes_to_excel(dataframes=[performed_df, problems],
                                  sheet_names=['Основной лист', 'problems'],
                                  folder_to_save=folder_to_save,
                                  file_name='preprocessing')
