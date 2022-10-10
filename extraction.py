@@ -3,7 +3,7 @@ import time
 from os import path
 import func
 import settings
-from settings import base_location, version, sheet_name
+from settings import base_location, version, fem_sheet_name
 import pandas as pd
 import traceback as tb
 import numpy as np
@@ -11,8 +11,8 @@ from func import rename_dict
 import datetime
 from colorama import Fore, Style, Back
 
-def decorator_entire_process(main_process):
 
+def decorator_entire_process(main_process):
     @func.timer
     def wrapper():
         print('--------------')
@@ -42,9 +42,10 @@ def extraction_process():
     errors = dict()
     result_df = None
 
-    for file in func.check_files_list(settings.fem_extract):
+    for file in func.check_excel_files_list(settings.fem_folder_extract):
         try:
-            fem = fem_preparing(os.path.join(settings.fem_extract, file))
+            fem = fem_preparing(os.path.join(settings.fem_folder_extract, file))
+            fem = func.add_input_file(fem, file)
         except Exception as e:
             print(Fore.RED, 'not ok', Style.RESET_ALL)
             errors[file] = ''.join(tb.format_exception(None, e, e.__traceback__))
@@ -58,10 +59,16 @@ def extraction_process():
             print(file)
             print(err)
 
+    if len(errors) == 0:
+        func.safe_dataframes_to_excel(dataframes=[result_df],
+                                      sheet_names=[settings.fem_sheet_name],
+                                      folder_to_save=settings.fem_folder_save,
+                                      file_name='extraction')
+
 
 @decorator_file_preparing
 def fem_preparing(file_path):
-    fem = pd.ExcelFile(file_path).parse(sheet_name=settings.sheet_name)
+    fem = pd.ExcelFile(file_path).parse(sheet_name=settings.fem_sheet_name)
     return FemTransform(fem).transform()
 
 
@@ -262,4 +269,3 @@ class FemTransform:
 
 if __name__ == '__main__':
     extraction_process()
-

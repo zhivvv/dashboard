@@ -1,12 +1,12 @@
 # import xlrd, xlwings
 from collections import namedtuple
-
+from fuzzywuzzy import fuzz
+from fuzzywuzzy import process as fuzz_process
 from colorama import Fore, Style, Back
 import os.path
 import math
 import pandas as pd
 import numpy as np
-import main
 from datetime import date
 from warnings import filterwarnings
 import datetime
@@ -14,13 +14,48 @@ import time
 import builtins
 import traceback
 import sys
+import settings
+import pyinputplus as pyip
 
 filterwarnings('ignore', category=UserWarning, module='openpyxl')
 
 
+class FileManipulation:
+    # TODO
+    pass
 
-def check_files_list(folder_path):
 
+class MatchingProcess:
+    # TODO
+    pass
+
+
+def single_input_file(folder_path):
+    list_of_folder_excel_files = check_excel_files_list(folder_path)
+    file_number_to_load = pyip.inputNum(min=1, max=len(list_of_folder_excel_files)) - 1
+    file_name_to_load = list_of_folder_excel_files[file_number_to_load]
+
+    return file_name_to_load
+
+
+def numerated_list(func):
+    def wrapper(arg):
+        folder_list = func(arg)
+        print()
+        print(f'Files in "{arg}" displayed below')
+        print('--------------')
+        for ind, file in enumerate(folder_list):
+            print(ind + 1, '. ', file, sep='')
+        print('--------------')
+        print('Choose one file (input a number)')
+
+        return folder_list
+
+    return wrapper
+
+
+@numerated_list
+def check_excel_files_list(folder_path: str) -> list:
     extensions = ['.xlsx', '.xls', '.xlsm', '.xlsb']
     wrong = ['~$']
     correct_list = []
@@ -35,7 +70,8 @@ def check_files_list(folder_path):
                 if ext in file_lower and wr not in file_lower:
                     correct_list.append(file)
 
-    return set(correct_list)
+    return list(set(correct_list))
+
 
 def timer(func):
     def wrapper(*args, **kwargs):
@@ -46,6 +82,7 @@ def timer(func):
         print('Process takes - ', end - start, ' sec', sep='')
 
     return wrapper
+
 
 def find_children(file_path):
     parent_dict = dict()
@@ -81,6 +118,11 @@ def get_create_date(file_path):
     return s3
 
 
+def add_input_file(df: pd.DataFrame, file_name):
+    df['input_file'] = file_name
+    return df
+
+
 def get_mod_date(file_path):
     s1 = os.path.getmtime(file_path)
     s2 = datetime.datetime.strptime(time.ctime(s1), '%c').date()
@@ -112,13 +154,15 @@ def add_edit_time_info(df: pd.DataFrame, fem_folder, filename):
 
     return df
 
+
 def check_duplicate_column_name(df: pd.DataFrame):
     duplicates = [column_name for column_name in df.columns.to_list() if df.columns.to_list().count(column_name) > 1]
     return duplicates
 
+
 def safe_dataframes_to_excel(dataframes: list,
                              sheet_names: list,
-                             folder_to_save=os.path.join(r'/Users/ivanov.ev/Work/Dashboard', 'tmp'),
+                             folder_to_save=os.path.join(settings.base_location, 'tmp'),
                              file_name='untitled'):
     today_date = date.today().strftime("%d%m%Y")
 
@@ -143,60 +187,30 @@ def safe_dataframes_to_excel(dataframes: list,
         print(f'File "{file_name}" has been saved to "{folder_to_save}"')
 
 
-def programme_filling(df: pd.DataFrame):
-    df['input_file_name'] = df['inputfile'].apply(lambda x: x[0:x.find('.')])
-    df['programme'] = np.where(df['programme'].isnull(), df['input_file_name'], df['programme'])
-    df.drop('input_file_name', axis=1, inplace=True)
-    return df
-
-
-def numerated_list(func):
-    def wrapper(arg):
-        folder_list = func(arg)
-        print()
-        print(f'Files in "{arg}" displayed below')
-        print('--------------')
-        for ind, file in enumerate(folder_list):
-            print(ind + 1, '. ', file, sep='')
-        print('--------------')
-        print()
-
-        return folder_list
-
-    return wrapper
-
-
 @numerated_list
-def list_files_in_folder(folder_path_to_list):
-    tmp, correct_list = [], []
-    garbage_parts = ['.DS', '~']
-    scr = 0
+def list_files_in_folder(folder_path_to_list: str) -> list:
+    files_list = check_excel_files_list(folder_path_to_list)
 
-    tmp = [file for file in os.listdir(folder_path_to_list) if
-           not os.path.isdir(os.path.join(folder_path_to_list, file))]
-
-    for file in tmp:
-        scr = 0
-        for part in garbage_parts:
-            if part in file:
-                scr += 1
-        if scr == 0:
-            correct_list.append(file)
-
-    return correct_list
+    return files_list
 
 
-def select_table_to_filelist(folder_path_to_list, sheet_name=None):
+def select_files_to_load(folder_path_to_list, sheet_name=None):
+    file_name_list_to_load = []
     try:
         file_list = list_files_in_folder(folder_path_to_list)
 
     except FileNotFoundError:
-        print(Fore.RED + 'WARNING: There is no file in specified directory' + Style.RESET_ALL)
+        print(Fore.RED + 'WARNING: Specified directory has not been found' + Style.RESET_ALL)
         sys.exit()
 
     # Input file number from displayed list and load Excel file
-    file_number = int(input('Which file do you want to download (input a number above): '))
-    df = pd.read_excel(os.path.join(folder_path_to_list, file_list[file_number - 1]), sheet_name=sheet_name)
+    hint = 'Which file do you want to download (input a number above): '
+    limit = [i for i in range(len(file_list))]
+    file_number = user_input(input_type=int, limit=limit, label=hint, distinct=True)
+
+    df: pd.DataFrame = pd.read_excel(os.path.join(folder_path_to_list, file_list[file_number - 1]),
+                                     sheet_name=sheet_name)
+    df: pd.DataFrame = pd.ExcelFile(d)
 
     return df
 
@@ -207,13 +221,6 @@ def groupby_key_field(df: pd.DataFrame, key: list, column_name='value', aggr_fun
     df = df.set_index(key).groupby(by=key).sum()
     df = df.reset_index()
 
-    return df
-
-
-def unstack_columns(df: pd.DataFrame, index: list, unstack_column_name: str, value_column_name='value'):
-    df = df.groupby(index).agg({value_column_name: 'sum'}).unstack(level=unstack_column_name,
-                                                                   fill_value=0).reset_index()
-    df.columns = [i[0] if i[0] != value_column_name else i[1] for i in df.columns.to_list()]
     return df
 
 
@@ -254,9 +261,162 @@ def rename_dict(a_list: list, dictionary: dict, minscore: int):
 
     return dict_for_rename
 
+
+def read_multiple_excel_files(files_path_list: list, sheet_list: list):
+    dataframe_dictionary = dict()
+
+    for file, sheet_name in zip(files_path_list, sheet_list):
+
+        file_base_name = os.path.basename(file)
+        try:
+            load = pd.ExcelFile(file).parse(sheet_name=sheet_name)
+            dataframe_dictionary[file_base_name] = load
+        except:
+            dataframe_dictionary[file] = None
+            print(f'{file_base_name} has not been loaded')
+            continue
+
+    return dataframe_dictionary
+
+
+def find_the_best_match():
+    # Function loops through columns in mapping file and finds the best match
+    pass
+
+
+def match_process(query: int,
+                  choices: list,
+                  score_cutoff_choice=80,
+                  show_results_in_terminal=False,
+                  show_matched=False) -> str | list:
+    scorers_coef = {fuzz.token_sort_ratio: 0.11,  # 1
+                    fuzz.QRatio: 0.11,  # 2
+                    fuzz.UQRatio: 0.11,  # 3
+                    fuzz.UWRatio: 0.11,  # 4
+                    fuzz.WRatio: 0.11,  # 5
+                    fuzz.partial_ratio: 0.11,  # 6
+                    fuzz.ratio: 0.11,  # 7
+                    fuzz.partial_token_set_ratio: 0.11,  # 8
+                    fuzz.partial_token_sort_ratio: 0.11  # 9
+                    }
+
+    # processors = []   integrate processors
+    results = {x: 0 for x in choices}
+
+    for scorer in scorers_coef:
+        # for processor in processors:
+        match = fuzz_process.extractOne(query=query,
+                                        choices=choices,
+                                        scorer=scorer,
+                                        # processor=processor,
+                                        score_cutoff=score_cutoff_choice
+                                        )
+        if match is None:
+            continue
+
+        results[match[0]] += match[1] * scorers_coef[scorer]
+
+    match_process_result = check_mapping_results(results,
+                                                 query,
+                                                 score_cutoff_choice,
+                                                 show_results_in_terminal
+                                                 )
+
+    if show_matched:
+        return match_process_result
+    else:
+        return match_process_result[1]
+
+
+def check_mapping_results(matching_results: dict,
+                          query: str,
+                          score_cutoff_choice: int,
+                          show_results_in_terminal: bool) -> list:
+    max_score_match = max(matching_results, key=matching_results.get)
+    max_score = max(matching_results.values())
+    label_matched = 'matched'
+    label_did_not_matched = 'not found'
+
+    label = label_did_not_matched if max_score < score_cutoff_choice else label_matched
+
+    if show_results_in_terminal:
+        print('----------------')
+        print(query, ' -- ', max_score_match, ' (matched)')
+        print('----------------')
+        print(matching_results)
+        print()
+    return [query, max_score_match, label, max_score]
+
+
+def fuzzmatch(input_list: list | pd.Series,
+              choices: list | pd.Series,
+              score_cutoff_choice: int = 75,
+              show_results_in_terminal: bool = False,
+              show_matched: bool = False) -> list | pd.Series | dict:
+    match_results = dict()
+
+    # Get exact structure
+    if isinstance(input_list, pd.Series):
+        input_list_process = input_list.unique().tolist()
+    else:
+        input_list_process = input_list
+
+    if isinstance(choices, pd.Series):
+        choices = choices.unique().tolist()
+    else:
+        choices = choices
+
+    for name in input_list_process:
+        processed_choice = match_process(query=name,
+                                         choices=choices,
+                                         score_cutoff_choice=score_cutoff_choice,
+                                         show_results_in_terminal=show_results_in_terminal,
+                                         show_matched=show_matched)
+        match_results[name] = processed_choice
+
+    # if isinstance(input_list, pd.Series):
+    #     result = input_list.map(match_results)
+    # else:
+    #     result = match_results.values()
+
+    # Add more complex logic
+
+    # return result
+    return match_results
+
+
+def parse_match_results(match_results: dict) -> pd.DataFrame:
+    dataframe_columns = ['query', 'result', 'matched', 'score']
+    data = []
+
+    for value in match_results.values():
+        data.append(value)
+
+    match_results_dataframe = pd.DataFrame(data, columns=dataframe_columns)
+
+    return match_results_dataframe
+
+
+def save_formulas_to_excel():
+    import openpyxl
+    from openpyxl.cell import Cell
+    from openpyxl import Workbook
+    wb: Workbook = openpyxl.load_workbook(settings.OPENPYXL_EXTRACTION_PATH)
+    ws = wb[settings.openpyxl_sheet_name]
+    cellObj: Cell
+    for i, cellObj in enumerate(ws['C'], 1):
+        if i == 1:
+            continue
+        print(ws['B'][0])
+
+        cellObj.value = "=vlookup(A{0}, A:B, 2, 0)".format(i)
+    wb.save(settings.OPENPYXL_EXTRACTION_PATH)
+
+
+def check_function():
+    pass
+
+
 if __name__ == '__main__':
-
-    import settings
-
-    folder_path = settings.fem_extract
-    check_files_list(folder_path)
+    check_function()
+    print()
