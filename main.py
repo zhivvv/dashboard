@@ -20,7 +20,7 @@ class Dialog:
         self.response = None
         self.user_accept = True
 
-    def choose_process(self):
+    def select_process(self):
         self.voice = 'Choose one of processes below'
         print(self.voice)
         print('--------------')
@@ -56,7 +56,7 @@ class Dialog:
     def run(self):
         print(self.voice)
         while self.user_accept:
-            self.choose_process()
+            self.select_process()
             self.run_process()
             print(self.voice)
             self.user_accept = self.user_accept_processing()

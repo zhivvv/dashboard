@@ -30,6 +30,18 @@ class MatchingProcess:
     pass
 
 
+def decorator_entire_process(main_process, process_name):
+    @func.timer
+    def wrapper():
+        print('--------------')
+        print('Process started')
+        print('--------------')
+        result = main_process()
+        print('Process ended')
+        return result
+
+    return wrapper
+
 def single_input_file(folder_path):
     list_of_folder_excel_files = check_excel_files_list(folder_path)
     file_number_to_load = pyip.inputNum(min=1, max=len(list_of_folder_excel_files)) - 1
@@ -164,6 +176,10 @@ def safe_dataframes_to_excel(dataframes: list,
                              sheet_names: list,
                              folder_to_save=os.path.join(settings.base_location, 'tmp'),
                              file_name='untitled'):
+    print('--------------')
+    print('File saving')
+    print('--------------')
+
     today_date = date.today().strftime("%d%m%Y")
 
     try:

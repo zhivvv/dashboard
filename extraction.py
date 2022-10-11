@@ -62,7 +62,7 @@ def extraction_process():
     if len(errors) == 0:
         func.safe_dataframes_to_excel(dataframes=[result_df],
                                       sheet_names=[settings.fem_sheet_name],
-                                      folder_to_save=settings.fem_folder_save,
+                                      folder_to_save=settings.fem_folder_results,
                                       file_name='extraction')
 
 

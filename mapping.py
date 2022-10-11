@@ -30,7 +30,7 @@ def decorator_for_save_table(save_function):
 @decorator_for_mapping_process
 def mapping_process():
     # Fem files
-    fem_results_folder = settings.fem_folder_save
+    fem_results_folder = settings.fem_folder_results
     fem_file_path = os.path.join(fem_results_folder, func.single_input_file(fem_results_folder))
     df = pd.ExcelFile(fem_file_path).parse(settings.fem_sheet_name)
     # Mapping file
@@ -104,7 +104,7 @@ class Mapping:
     @decorator_for_save_table
     def save_to_mapping(self):
 
-        save_to = settings.mapping_folder_save
+        save_to = settings.mapping_folder_results
         # add columns (file_path)
         func.safe_dataframes_to_excel(dataframes=[self.result_mapping],
                                       sheet_names=['mapping'],
