@@ -45,7 +45,8 @@ def extraction_process():
     for file in func.check_excel_files_list(settings.fem_folder_extract):
         try:
             fem = fem_preparing(os.path.join(settings.fem_folder_extract, file))
-            fem = func.add_input_file(fem, file)
+            fem['input_file'] = file
+            # fem = func.add_input_file(fem, file)
         except Exception as e:
             print(Fore.RED, 'not ok', Style.RESET_ALL)
             errors[file] = ''.join(tb.format_exception(None, e, e.__traceback__))
@@ -78,6 +79,8 @@ class FemTransform:
         self._df = df
 
     def skip_top_rows_in_dataframe(self):
+
+        # TODO Rewrite using mathing process
 
         columns_to_find = [2022, 2023, 2024]
 

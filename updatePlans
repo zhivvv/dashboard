@@ -1,0 +1,27 @@
+Next update information
+
+
+
+Extraction
+
+1.  Rewrite using classes and functions from func
+2.  Add code processing
+3.  Get rid of rename_dict function
+4.  Save files to .csv too
+
+
+Func
+
+1.  Add template class
+2.  Move all decorators
+3.  Apply map function for pd.Series
+
+
+Mapping
+
+1.  Rewrite using classes and functions from func
+
+
+Reports
+
+1. Create

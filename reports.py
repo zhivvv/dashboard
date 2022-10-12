@@ -90,13 +90,17 @@ class Reports:
 
         return self
 
+    def move_costs_to_typecf(self):
+        self.result['typecf'] = np.where(self.result['typecf'] == 'Затраты', self.result['subtypecf'],
+                                         self.result['typecf'])
+
+        return self
+
+
     def full_report(self):
         report_name = 'full_report'
 
-        self.apply_mapping_to_fem(fillna=True)
-
-        self.result['typecf'] = np.where(self.result['typecf'] == 'Затраты', self.result['subtypecf'],
-                                         self.result['typecf'])
+        self.apply_mapping_to_fem(fillna=True).move_costs_to_typecf()
 
         func.safe_dataframes_to_excel(dataframes=[self.result],
                                       sheet_names=[report_name],
@@ -104,25 +108,35 @@ class Reports:
                                       file_name=report_name
                                       )
 
-        return self.result
+        return self
 
     def programme_report(self):
-        programmes = func.groupby_key_field(self.fem,
-                                            key=['key',
-                                                 'programme',
-                                                 'mod_typecf',
-                                                 'year']
-                                            )
 
-        analysis = self.fem.pivot_table(values='value',
-                                        index=['key', 'programme', 'mod_typecf'],
-                                        columns='year',
-                                        aggfunc='sum',
-                                        fill_value=0
-                                        )
-        analysis.reset_index(inplace=True)
+        report_name = 'programme_report'
+        # TODO Finish that function
 
-        return self.result
+        (self
+         .apply_mapping_to_fem(fillna=True)
+         .move_costs_to_typecf()
+         )
+
+        self.result['key'] = self.result['programme'].map(str) + self.result['typecf'].map(str)
+
+        programme_report = self.result.pivot_table(values='value',
+                                                   index=['key', 'programme', 'typecf'],
+                                                   columns='year',
+                                                   aggfunc='sum',
+                                                   fill_value=0
+                                                   )
+        programme_report.reset_index(inplace=True)
+
+        func.safe_dataframes_to_excel(dataframes=[programme_report],
+                                      sheet_names=[report_name],
+                                      folder_to_save=settings.report_folder_results,
+                                      file_name=report_name
+                                      )
+
+        return self
 
     def run(self):
 

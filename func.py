@@ -20,27 +20,243 @@ import pyinputplus as pyip
 filterwarnings('ignore', category=UserWarning, module='openpyxl')
 
 
-class FileManipulation:
-    # TODO
-    pass
+# @numerated_list
+# def list_files_in_folder(folder_path_to_list: str) -> list:
+#     # todo drop function if possible
+#     files_list = check_excel_files_list(folder_path_to_list)
+#     return files_list
+#
+#
+# def select_files_to_load(folder_path_to_list, sheet_name=None):
+#     file_name_list_to_load = []
+#     try:
+#         file_list = list_files_in_folder(folder_path_to_list)
+#
+#     except FileNotFoundError:
+#         print(Fore.RED + 'WARNING: Specified directory has not been found' + Style.RESET_ALL)
+#         sys.exit()
+#
+#     # Input file number from displayed list and load Excel file
+#     hint = 'Which file do you want to download (input a number above): '
+#     limit = [i for i in range(len(file_list))]
+#     file_number = user_input(input_type=int, limit=limit, label=hint, distinct=True)
+#
+#     df: pd.DataFrame = pd.read_excel(os.path.join(folder_path_to_list, file_list[file_number - 1]),
+#                                      sheet_name=sheet_name)
+#     df: pd.DataFrame = pd.ExcelFile(d)
+#
+#     return df
+
+
+class Folder:
+
+    @staticmethod
+    def __isdir_check(x):
+        check = os.path.isdir(x)
+        if not check:
+            raise IsADirectoryError
+        else:
+            return x
+
+    def __init__(self, folder_path: str):
+        # self._path = folder_path if os.path.isdir(folder_path) else print('is not folder')
+        self.path = Folder.__isdir_check(folder_path)
+        self.name = os.path.basename(folder_path)
+
+    @property
+    def files(self) -> list | str:
+
+        wrong = ['~$']
+        file_list = []
+
+        try:
+            for file in os.listdir(self.path):
+                for bad in wrong:
+                    if not os.path.isdir(os.path.join(self.path, file)) and bad not in file:
+                        file_list.append(file)
+
+            return file_list
+
+        except FileNotFoundError:
+            print(Fore.RED + 'Specified directory has not been found' + Style.RESET_ALL)
+
+    @property
+    def excel_files(self):
+
+        excel_extension = '.xls'
+        files_list = [file for file in self.files if excel_extension in file]
+        return files_list
+
+    def select_file(self, xls=True):
+        file_name = pyip.inputMenu(choices=self.excel_files if xls else self.files,
+                                   prompt='Files:\n',
+                                   numbered=True)
+
+        print('Selected:', Fore.GREEN + file_name + Style.RESET_ALL)
+        return file_name
+
+    def file_exists(self, file: str):
+        return os.path.exists(os.path.join(self.path, file))
+
+
+def timer(some_process):
+    def wrapper(*args, **kwargs):
+        time_started = datetime.datetime.now()
+        some_process(*args, **kwargs)
+        time_finished = datetime.datetime.now()
+        process_time = time_finished - time_started  # TODO add time format
+        print('(', process_time, ' sec)', sep='')
+
+    return wrapper
+
+
+def process_decorator(process_function):
+    @timer
+    def wrapper(*args, **kwargs):
+        print('--------------')
+        print('Process has just started')
+        print('--------------')
+        process_function(*args, **kwargs)
+        print(Fore.GREEN + 'Finished successfully' + Style.RESET_ALL, end=' ')
+
+    return wrapper
 
 
 class MatchingProcess:
-    # TODO
-    pass
+    # TODO matching process as service class
+
+    def __init__(self, mapping_file, dataframe):
+        self.mapping = mapping_file
+
+    def find_the_best_match(): #todo
+        # Function loops through columns in mapping file and finds the best match
+        pass
+
+    def match_process(query: int,
+                      choices: list,
+                      score_cutoff_choice=80,
+                      show_results_in_terminal=False,
+                      show_matched=False) -> str | list:
+        scorers_coef = {fuzz.token_sort_ratio: 0.11,  # 1
+                        fuzz.QRatio: 0.11,  # 2
+                        fuzz.UQRatio: 0.11,  # 3
+                        fuzz.UWRatio: 0.11,  # 4
+                        fuzz.WRatio: 0.11,  # 5
+                        fuzz.partial_ratio: 0.11,  # 6
+                        fuzz.ratio: 0.11,  # 7
+                        fuzz.partial_token_set_ratio: 0.11,  # 8
+                        fuzz.partial_token_sort_ratio: 0.11  # 9
+                        }
+
+        # processors = []   integrate processors
+        results = {x: 0 for x in choices}
+
+        for scorer in scorers_coef:
+            # for processor in processors:
+            match = fuzz_process.extractOne(query=query,
+                                            choices=choices,
+                                            scorer=scorer,
+                                            # processor=processor,
+                                            score_cutoff=score_cutoff_choice
+                                            )
+            if match is None:
+                continue
+
+            results[match[0]] += match[1] * scorers_coef[scorer]
+
+        match_process_result = check_mapping_results(results,
+                                                     query,
+                                                     score_cutoff_choice,
+                                                     show_results_in_terminal
+                                                     )
+
+        if show_matched:
+            return match_process_result
+        else:
+            return match_process_result[1]
+
+    def check_mapping_results(matching_results: dict,
+                              query: str,
+                              score_cutoff_choice: int,
+                              show_results_in_terminal: bool) -> list:
+        max_score_match = max(matching_results, key=matching_results.get)
+        max_score = max(matching_results.values())
+        label_matched = 'matched'
+        label_did_not_matched = 'not found'
+
+        label = label_did_not_matched if max_score < score_cutoff_choice else label_matched
+
+        if show_results_in_terminal:
+            print('----------------')
+            print(query, ' -- ', max_score_match, ' (matched)')
+            print('----------------')
+            print(matching_results)
+            print()
+        return [query, max_score_match, label, max_score]
+
+    def fuzzmatch(input_list: list | pd.Series,
+                  choices: list | pd.Series,
+                  score_cutoff_choice: int = 75,
+                  show_results_in_terminal: bool = False,
+                  show_matched: bool = False) -> list | pd.Series | dict:
+        match_results = dict()
+
+        # Get exact structure
+        if isinstance(input_list, pd.Series):
+            input_list_process = input_list.unique().tolist()
+        else:
+            input_list_process = input_list
+
+        if isinstance(choices, pd.Series):
+            choices = choices.unique().tolist()
+        else:
+            choices = choices
+
+        for name in input_list_process:
+            processed_choice = match_process(query=name,
+                                             choices=choices,
+                                             score_cutoff_choice=score_cutoff_choice,
+                                             show_results_in_terminal=show_results_in_terminal,
+                                             show_matched=show_matched)
+            match_results[name] = processed_choice
+
+        # if isinstance(input_list, pd.Series):
+        #     result = input_list.map(match_results)
+        # else:
+        #     result = match_results.values()
+
+        # Add more complex logic
+
+        # return result
+        return match_results
+
+    def parse_match_results(match_results: dict) -> pd.DataFrame:
+        dataframe_columns = ['query', 'result', 'matched', 'score']
+        data = []
+
+        for value in match_results.values():
+            data.append(value)
+
+        match_results_dataframe = pd.DataFrame(data, columns=dataframe_columns)
+
+        return match_results_dataframe
 
 
-def decorator_entire_process(main_process, process_name):
-    @func.timer
-    def wrapper():
-        print('--------------')
-        print('Process started')
-        print('--------------')
-        result = main_process()
-        print('Process ended')
-        return result
+class BasicProcessClass:
 
-    return wrapper
+    def __init__(self, data: dict | pd.DataFrame, process_name: str = 'untitled'):
+        self.name = process_name
+        self.data = data
+        self.user_choice: int | None = None
+        self.result = None
+
+    @process_decorator
+    def run(self):
+        pass
+
+    def save_file(self, dataframes, folder_path, file_name, ):
+        return self
+
 
 def single_input_file(folder_path):
     list_of_folder_excel_files = check_excel_files_list(folder_path)
@@ -85,17 +301,6 @@ def check_excel_files_list(folder_path: str) -> list:
     return list(set(correct_list))
 
 
-def timer(func):
-    def wrapper(*args, **kwargs):
-        start = datetime.datetime.now()
-        func(*args, **kwargs)
-        end = datetime.datetime.now()
-        print()
-        print('Process takes - ', end - start, ' sec', sep='')
-
-    return wrapper
-
-
 def find_children(file_path):
     parent_dict = dict()
     parent_name = os.path.basename(os.path.normpath(file_path))
@@ -128,11 +333,6 @@ def get_create_date(file_path):
     s3 = s2.strftime('%d/%m/%Y')
 
     return s3
-
-
-def add_input_file(df: pd.DataFrame, file_name):
-    df['input_file'] = file_name
-    return df
 
 
 def get_mod_date(file_path):
@@ -183,30 +383,25 @@ def safe_dataframes_to_excel(dataframes: list,
     today_date = date.today().strftime("%d%m%Y")
 
     try:
-
         with pd.ExcelWriter(f'{folder_to_save}/{file_name}_{today_date}.xlsx') as writer:
-
             for df, sheet_name in zip(dataframes, sheet_names):
                 df.to_excel(writer, sheet_name=sheet_name, index=False)
 
     except OSError:
-
         os.mkdir(folder_to_save)
 
         with pd.ExcelWriter(f'{folder_to_save}/{file_name}_{today_date}.xlsx') as writer:
-
             for df, sheet_name in zip(dataframes, sheet_names):
                 df.to_excel(writer, sheet_name=sheet_name, index=False)
 
     finally:
-
         print(f'File "{file_name}" has been saved to "{folder_to_save}"')
 
 
 @numerated_list
 def list_files_in_folder(folder_path_to_list: str) -> list:
+    # todo drop function if possible
     files_list = check_excel_files_list(folder_path_to_list)
-
     return files_list
 
 
@@ -241,8 +436,8 @@ def groupby_key_field(df: pd.DataFrame, key: list, column_name='value', aggr_fun
 
 
 def rename_dict(a_list: list, dictionary: dict, minscore: int):
-    # TODO
     # if column has not been found or score equals then store name to mapping
+    # todo get rid!
     score = 0
     zeros = 0
     tmp_dict = {}
@@ -279,6 +474,7 @@ def rename_dict(a_list: list, dictionary: dict, minscore: int):
 
 
 def read_multiple_excel_files(files_path_list: list, sheet_list: list):
+    # todo move to Folder class
     dataframe_dictionary = dict()
 
     for file, sheet_name in zip(files_path_list, sheet_list):
@@ -296,6 +492,7 @@ def read_multiple_excel_files(files_path_list: list, sheet_list: list):
 
 
 def find_the_best_match():
+    # todo move to MatchingProcess class
     # Function loops through columns in mapping file and finds the best match
     pass
 
@@ -348,6 +545,7 @@ def check_mapping_results(matching_results: dict,
                           query: str,
                           score_cutoff_choice: int,
                           show_results_in_terminal: bool) -> list:
+    # todo move to MatchingProcess class
     max_score_match = max(matching_results, key=matching_results.get)
     max_score = max(matching_results.values())
     label_matched = 'matched'
@@ -369,6 +567,7 @@ def fuzzmatch(input_list: list | pd.Series,
               score_cutoff_choice: int = 75,
               show_results_in_terminal: bool = False,
               show_matched: bool = False) -> list | pd.Series | dict:
+    # todo move to MatchingProcess class
     match_results = dict()
 
     # Get exact structure
@@ -402,6 +601,7 @@ def fuzzmatch(input_list: list | pd.Series,
 
 
 def parse_match_results(match_results: dict) -> pd.DataFrame:
+    # todo move to MatchingProcess class
     dataframe_columns = ['query', 'result', 'matched', 'score']
     data = []
 
