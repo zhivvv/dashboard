@@ -11,7 +11,6 @@ from datetime import date
 from warnings import filterwarnings
 import datetime
 import time
-import builtins
 import traceback
 import sys
 import settings
@@ -125,18 +124,44 @@ def process_decorator(process_function):
 class MatchingProcess:
     # TODO matching process as service class
 
-    def __init__(self, mapping_file, dataframe):
-        self.mapping = mapping_file
+    def __init__(self, choices: pd.DataFrame | pd.Series | list):
+        self.choices = choices
+        self.result: pd.DataFrame = pd.DataFrame()
 
-    def find_the_best_match(): #todo
-        # Function loops through columns in mapping file and finds the best match
-        pass
+    def best_sequence_match(self, query: pd.Series | list,
+                            score_cutoff_choice=80,
+                            show_results_in_terminal=False,
+                            drop_not_best: bool = True
+                            ):
 
-    def match_process(query: int,
-                      choices: list,
-                      score_cutoff_choice=80,
-                      show_results_in_terminal=False,
-                      show_matched=False) -> str | list:
+        for series_name in self.choices:
+            mapping_df = self.choices
+            self.choices = self.choices[series_name]
+
+            res = self.sequence_match(query=query,
+                                      score_cutoff_choice=score_cutoff_choice,
+                                      show_results_in_terminal=show_results_in_terminal)
+
+            self.result = pd.concat([self.result, res], axis=0)
+
+            self.choices = mapping_df
+
+        self.result.reset_index(drop=True, inplace=True)
+
+        if drop_not_best:
+            ind_max = self.result.groupby(['query'])['score'].idxmax()
+            self.result.loc[ind_max, 'chosen'] = self.result.loc[ind_max, 'result']
+            self.result.dropna(subset=['chosen'], inplace=True)
+            self.result.reset_index(drop=True, inplace=True)
+
+        return self.result
+
+    def single_match(self,
+                     query: str,
+                     score_cutoff_choice: int = 80,
+                     show_results_in_terminal: bool = False,
+                     show_matched: bool = True) -> str | list:
+
         scorers_coef = {fuzz.token_sort_ratio: 0.11,  # 1
                         fuzz.QRatio: 0.11,  # 2
                         fuzz.UQRatio: 0.11,  # 3
@@ -148,13 +173,20 @@ class MatchingProcess:
                         fuzz.partial_token_sort_ratio: 0.11  # 9
                         }
 
+        # check query str
+
+        if isinstance(self.choices, pd.Series):
+            choices = self.choices.dropna().tolist()
+        else:
+            choices = self.choices
+
         # processors = []   integrate processors
         results = {x: 0 for x in choices}
 
         for scorer in scorers_coef:
             # for processor in processors:
             match = fuzz_process.extractOne(query=query,
-                                            choices=choices,
+                                            choices=self.choices,
                                             scorer=scorer,
                                             # processor=processor,
                                             score_cutoff=score_cutoff_choice
@@ -164,21 +196,26 @@ class MatchingProcess:
 
             results[match[0]] += match[1] * scorers_coef[scorer]
 
-        match_process_result = check_mapping_results(results,
-                                                     query,
-                                                     score_cutoff_choice,
-                                                     show_results_in_terminal
-                                                     )
+        match_process_result = (MatchingProcess
+                                .check_mapping_results(results,
+                                                       query,
+                                                       score_cutoff_choice,
+                                                       show_results_in_terminal
+                                                       )
+                                )
 
         if show_matched:
             return match_process_result
         else:
             return match_process_result[1]
 
+    @staticmethod
     def check_mapping_results(matching_results: dict,
                               query: str,
                               score_cutoff_choice: int,
-                              show_results_in_terminal: bool) -> list:
+                              show_results_in_terminal: bool
+                              ) -> list:
+
         max_score_match = max(matching_results, key=matching_results.get)
         max_score = max(matching_results.values())
         label_matched = 'matched'
@@ -188,48 +225,37 @@ class MatchingProcess:
 
         if show_results_in_terminal:
             print('----------------')
-            print(query, ' -- ', max_score_match, ' (matched)')
+            print(query, ' -- ', max_score_match, f' ({label})')
             print('----------------')
             print(matching_results)
             print()
         return [query, max_score_match, label, max_score]
 
-    def fuzzmatch(input_list: list | pd.Series,
-                  choices: list | pd.Series,
-                  score_cutoff_choice: int = 75,
-                  show_results_in_terminal: bool = False,
-                  show_matched: bool = False) -> list | pd.Series | dict:
-        match_results = dict()
+    def sequence_match(self,
+                       query: list | pd.Series,
+                       score_cutoff_choice: int = 75,
+                       show_results_in_terminal: bool = False
+                       ) -> pd.DataFrame:
+
+        result = dict()
 
         # Get exact structure
-        if isinstance(input_list, pd.Series):
-            input_list_process = input_list.unique().tolist()
+        if isinstance(query, pd.Series):
+            input_list_process = query.dropna().unique()
         else:
-            input_list_process = input_list
-
-        if isinstance(choices, pd.Series):
-            choices = choices.unique().tolist()
-        else:
-            choices = choices
+            input_list_process = set([x for x in query if str(x) != 'nan'])
 
         for name in input_list_process:
-            processed_choice = match_process(query=name,
-                                             choices=choices,
-                                             score_cutoff_choice=score_cutoff_choice,
-                                             show_results_in_terminal=show_results_in_terminal,
-                                             show_matched=show_matched)
-            match_results[name] = processed_choice
+            processed_choice = self.single_match(query=name,
+                                                 score_cutoff_choice=score_cutoff_choice,
+                                                 show_results_in_terminal=show_results_in_terminal
+                                                 )
 
-        # if isinstance(input_list, pd.Series):
-        #     result = input_list.map(match_results)
-        # else:
-        #     result = match_results.values()
+            result[name] = processed_choice
 
-        # Add more complex logic
+        return MatchingProcess.parse_match_results(result)
 
-        # return result
-        return match_results
-
+    @staticmethod
     def parse_match_results(match_results: dict) -> pd.DataFrame:
         dataframe_columns = ['query', 'result', 'matched', 'score']
         data = []
