@@ -3,42 +3,25 @@ import numpy as np
 import pyinputplus as pyip
 import func
 import settings
-
+import mapping as mp
+import os
 
 # filterwarnings('ignore', category=UserWarning, module='openpyxl')
 
 def process():
-    # mapping = ['гонка', 'горак', 'загореть']
-    # mapping = pd.Series(data=mapping, name='a')
-    # query = 'гора'
-    #
-    # a = func.MatchingProcess(mapping).single_match(query=query,
-    #                                                show_results_in_terminal=True
-    #                                                )
-    #
-    # mapping = ['гонка', 'горак', 'загореть']
-    # mapping = pd.Series(data=mapping, name='a')
-    # query = ['гора', 'горн']
-    # query = pd.Series(data=query, name='query')
-    #
-    # b = func.MatchingProcess(mapping).sequence_match(query=query,
-    #                                                  show_results_in_terminal=True
-    #                                                  )
 
-    mapping = pd.DataFrame({'a': ['гонка', 'горак', 'загореть'],
-                            'b': ['гон', 'рак', 'реветь']
-                            })
-    query = ['гора', 'горн']
-    query = pd.Series(data=query, name='query')
+    columns_for_mapping = ['programme', 'dzo', 'typecf', 'subtypecf']
 
-    c = func.MatchingProcess(mapping).best_sequence_match(query=query,
-                                                          show_results_in_terminal=True,
-                                                          drop_not_best=False
-                                                          )
+    extracted_df_file = func.Folder(settings.fem_folder_results).select_file(xls=True)
+    extracted_df_path = os.path.join(settings.fem_folder_results, extracted_df_file)
+    extracted_df = pd.ExcelFile(extracted_df_path).parse()
+    mapping_file = pd.ExcelFile(settings.mapping_file_extract)
+    mapping_dict = mapping_file.parse(sheet_name=mapping_file.sheet_names)
 
-    # print(a)
-    # print(b)
-    print(c)
+    for column_name in columns_for_mapping:
+        mapping_table = mapping_dict[column_name]
+        temp = func.MatchingProcess(mapping_table).mapping_table(extracted_df[column_name])
+
 
 
 if __name__ == '__main__':

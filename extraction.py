@@ -46,7 +46,6 @@ def extraction_process():
         try:
             fem = fem_preparing(os.path.join(settings.fem_folder_extract, file))
             fem['input_file'] = file
-            # fem = func.add_input_file(fem, file)
         except Exception as e:
             print(Fore.RED, 'not ok', Style.RESET_ALL)
             errors[file] = ''.join(tb.format_exception(None, e, e.__traceback__))

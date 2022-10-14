@@ -58,7 +58,6 @@ class Folder:
             return x
 
     def __init__(self, folder_path: str):
-        # self._path = folder_path if os.path.isdir(folder_path) else print('is not folder')
         self.path = Folder.__isdir_check(folder_path)
         self.name = os.path.basename(folder_path)
 
@@ -89,7 +88,8 @@ class Folder:
     def select_file(self, xls=True):
         file_name = pyip.inputMenu(choices=self.excel_files if xls else self.files,
                                    prompt='Files:\n',
-                                   numbered=True)
+                                   numbered=True,
+                                   blank=True)
 
         print('Selected:', Fore.GREEN + file_name + Style.RESET_ALL)
         return file_name
@@ -131,8 +131,9 @@ class MatchingProcess:
     def best_sequence_match(self, query: pd.Series | list,
                             score_cutoff_choice=80,
                             show_results_in_terminal=False,
-                            drop_not_best: bool = True
-                            ):
+                            drop_not_best: bool = True,
+                            add_column_name: str | bool = False
+                            ) -> pd.DataFrame:
 
         for series_name in self.choices:
             mapping_df = self.choices
@@ -150,9 +151,13 @@ class MatchingProcess:
 
         if drop_not_best:
             ind_max = self.result.groupby(['query'])['score'].idxmax()
-            self.result.loc[ind_max, 'chosen'] = self.result.loc[ind_max, 'result']
-            self.result.dropna(subset=['chosen'], inplace=True)
-            self.result.reset_index(drop=True, inplace=True)
+            self.result = self.result.loc[ind_max, :]
+
+        self.result.index = self.result['result_index']
+        self.result.drop(columns='result_index', inplace=True)
+
+        if add_column_name:
+            self.result['column'] = add_column_name
 
         return self.result
 
@@ -203,6 +208,11 @@ class MatchingProcess:
                                                        show_results_in_terminal
                                                        )
                                 )
+        # add index in default table
+
+        if isinstance(self.choices, pd.Series):
+            result_index = self.choices[self.choices == match_process_result[1]].index.tolist()[0]
+            match_process_result.append(result_index)
 
         if show_matched:
             return match_process_result
@@ -257,7 +267,7 @@ class MatchingProcess:
 
     @staticmethod
     def parse_match_results(match_results: dict) -> pd.DataFrame:
-        dataframe_columns = ['query', 'result', 'matched', 'score']
+        dataframe_columns = ['query', 'result', 'matched', 'score', 'result_index']
         data = []
 
         for value in match_results.values():
@@ -266,6 +276,18 @@ class MatchingProcess:
         match_results_dataframe = pd.DataFrame(data, columns=dataframe_columns)
 
         return match_results_dataframe
+
+    def mapping_table(self,
+                      query: pd.Series):
+
+        result_names = self.choices.iloc[:, 0]
+        self.choices = self.choices.iloc[:, 1:]
+
+        self.best_sequence_match(query=query, drop_not_best=True, add_column_name=query.name)
+        self.result.loc[:, 'chosen'] = result_names
+        self.result.reset_index(drop=True, inplace=True)
+
+        return self.result
 
 
 class BasicProcessClass:
@@ -408,20 +430,34 @@ def safe_dataframes_to_excel(dataframes: list,
 
     today_date = date.today().strftime("%d%m%Y")
 
+    def save_process(exist=True):
+
+        path_to_save = f'{folder_to_save}/{file_name}_{today_date}.xlsx'
+
+        if os.path.exists(path_to_save) and exist:
+            raise FileExistsError
+
+        with pd.ExcelWriter(path_to_save) as writer:
+            for df, sheet_name in zip(dataframes, sheet_names):
+                df.to_excel(writer, sheet_name=sheet_name, index=False)
+        print(Fore.GREEN + f'File "{file_name}" has been saved to "{folder_to_save}"' + Style.RESET_ALL)
+
     try:
-        with pd.ExcelWriter(f'{folder_to_save}/{file_name}_{today_date}.xlsx') as writer:
-            for df, sheet_name in zip(dataframes, sheet_names):
-                df.to_excel(writer, sheet_name=sheet_name, index=False)
+        save_process()
 
-    except OSError:
+    except FileNotFoundError:
         os.mkdir(folder_to_save)
+        save_process()
+    except FileExistsError:
+        print(Fore.YELLOW + f'"{file_name}_{today_date}" exists in "{folder_to_save}"' + Style.RESET_ALL)
+        print('Do you want to rename file?')
+        choice = pyip.inputYesNo(prompt='(y/n) - ', yesVal='y', noVal='n')
+        if choice == 'y':
+            file_name = input('file_name: ')
+            save_process()
+        else:
+            save_process(exist=False)
 
-        with pd.ExcelWriter(f'{folder_to_save}/{file_name}_{today_date}.xlsx') as writer:
-            for df, sheet_name in zip(dataframes, sheet_names):
-                df.to_excel(writer, sheet_name=sheet_name, index=False)
-
-    finally:
-        print(f'File "{file_name}" has been saved to "{folder_to_save}"')
 
 
 @numerated_list

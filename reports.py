@@ -96,10 +96,10 @@ class Reports:
 
         return self
 
-
     def full_report(self):
         report_name = 'full_report'
 
+        self.code_processing()
         self.apply_mapping_to_fem(fillna=True).move_costs_to_typecf()
 
         func.safe_dataframes_to_excel(dataframes=[self.result],
@@ -109,6 +109,23 @@ class Reports:
                                       )
 
         return self
+
+    def code_processing(self):
+
+        self.result['code'] = self.result['code'].str.strip()
+        self.result['check_code'] = self.result['code'].apply(lambda x: len(str(x)))
+        # bins = [7, 9, 11, 13]
+        # bins_labels = ['not ok', 'ok', 'not ok']
+
+        self.result['code'] = np.where(self.result['check_code'] == 10, self.result['code'], 'n/a')
+        self.result.drop(columns='check_code', inplace=True)
+        # self.result['check_code'] = pd.cut(self.result['check_code'], bins=bins,
+        #                                    labels=bins_labels, ordered=False)
+        # self.result['code'] = np.where(self.result['check_code'] == 'ok' ,
+        #                                self.result['code'],
+        #                                )
+
+        return self.result
 
     def programme_report(self):
 
