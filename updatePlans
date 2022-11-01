@@ -5,7 +5,7 @@ Next update information
 Extraction
 
 1.  Rewrite using classes and functions from func
-2.  Add code processing
+2.  Add code processing (+)
 3.  Get rid of rename_dict function
 4.  Save files to .csv too
 
@@ -25,3 +25,9 @@ Mapping
 Reports
 
 1. Create
+
+
+Calculations
+
+1. Flow discounting with 18/14 rule
+2. Basic model
