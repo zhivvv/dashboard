@@ -30,4 +30,8 @@ Reports
 Calculations
 
 1. Flow discounting with 18/14 rule
-2. Basic model
+2. Basic model (+)
+3. Split calculations into basic part and derivative part
+4. Amortization calc
+5. Effect 5 year for project
+6. Calculate to DZO
