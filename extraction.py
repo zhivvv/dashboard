@@ -36,6 +36,25 @@ def decorator_file_preparing(extraction_transform_process):
 
     return wrapper
 
+def extraction_for_gui(folder):
+
+    errors = dict()
+    result_df = None
+
+    for file in func.check_excel_files_list(folder):
+        try:
+            fem = fem_preparing(os.path.join(folder, file))
+            fem['input_file'] = file
+        except Exception as e:
+            print(Fore.RED, 'not ok', Style.RESET_ALL)
+            errors[file] = ''.join(tb.format_exception(None, e, e.__traceback__))
+            continue
+
+        result_df = pd.concat([result_df, fem], axis=0)
+
+    return result_df
+
+
 
 @decorator_entire_process
 def extraction_process():

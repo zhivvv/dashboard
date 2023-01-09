@@ -280,6 +280,7 @@ class MatchingProcess:
     def mapping_table(self,
                       query: pd.Series):
 
+        # self.choice must be pd.DataFrame, not pd.Series
         result_names = self.choices.iloc[:, 0]
         self.choices = self.choices.iloc[:, 1:]
 

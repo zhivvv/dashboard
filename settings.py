@@ -16,7 +16,7 @@ fem_folder_results = f'{base_location}/fem/results'
 mapping_folder_results = f'{base_location}/mapping/results'
 sip_folder_results = f'{base_location}/sip/results'
 report_folder_results = f'{base_location}/reports'
-calculation_folder_results = f'{base_location}/reports'
+calculation_folder_results = f'{base_location}/calc'
 
 # Sheet names
 sip_sheet_name = 'Свод'

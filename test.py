@@ -1,29 +1,30 @@
-import pandas as pd
-import numpy as np
-import pyinputplus as pyip
-import func
-import settings
-import mapping as mp
-import os
-import calculations
-from func import timer
+import pandas
 
 
-# filterwarnings('ignore', category=UserWarning, module='openpyxl')
+class Point:
 
-def process():
-    df = pd.DataFrame(5, index=pd.Index(range(100)), columns=['a', 'b'])
-    summ(df['a'], df['b'])
-    summ(df.a.to_numpy(), df.b.to_numpy())
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
 
-@timer
-def summ(a, b):
-    for _ in range(100000):
-        c = a + b
-    return c
+    def distance_to(self, point):
+
+        distance = ((self.x - point.x)**2 + (self.y - point.y)**2)**0.5
+
+        return distance
 
 
 if __name__ == '__main__':
-    process()
 
-    print()
+
+    a = Point(1,1)
+    b = Point(2,2)
+
+    print(a.distance_to(b))
+
+    фукнция дистдо(а, б)
+    в = аб
+    возврат в
+    конецфункции
+
+    в = дистдо(а,б)

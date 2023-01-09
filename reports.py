@@ -127,6 +127,10 @@ class Reports:
 
         return self.result
 
+    def project_processing(self):
+        self.result['project'] = self.result['code'].str.strip()
+        return self
+
     def programme_report(self):
 
         report_name = 'programme_report'

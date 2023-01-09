@@ -20,18 +20,29 @@ Func
 Mapping
 
 1.  Rewrite using classes and functions from func
+2.  Add projects to master mapping file
+3.  Subtypecf and dzo null handling (+)
+4.  Code preparing
 
 
 Reports
 
-1. Create
+1.  KPI calculations for granula
+2.  Programme report
+3.  Project report
 
 
 Calculations
 
-1. Flow discounting with 18/14 rule
-2. Basic model (+)
-3. Split calculations into basic part and derivative part
-4. Amortization calc
-5. Effect 5 year for project
-6. Calculate to DZO
+1.  Flow discounting with 18/14 rule (+)
+2.  Basic model (+)
+3.  Split calculations into basic part and derivative part
+4.  Amortization calc
+5.  Effect 5 year for project
+6.  Calculate to DZO
+7.  Point_forward calculation (?)
+8.  DPP, MIRR
+9.  Сокращение CAPEX (+)
+10. Save to calc folder (+)
+11. Sort by project and year
+12. Portfel calculation
