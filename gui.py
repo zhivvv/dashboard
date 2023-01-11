@@ -20,33 +20,52 @@ class GUI(QtWidgets.QMainWindow):
 
         self.events()
         self.table = None
+        self.msg = None
+        self.path = None
 
     # Define events
     def events(self):
-        self.ui.btn_1.clicked.connect(lambda: self.extraction())
-        self.ui.btn_4.clicked.connect(lambda: mapping_process())
-        self.ui.btn_3.clicked.connect(lambda: calculation_process())
-        self.ui.btn_tool_1.clicked.connect(lambda: self.get_mapping_file())
-        self.ui.btn_export.clicked.connect(lambda: self.save_table('/Users/ivanov.ev/Desktop/',
-                                                                   'test'))
 
-    def get_directory(self):
-        dir = QtWidgets.QFileDialog.getExistingDirectory(None, 'Select a folder:',
-                                                         os.path.expanduser("~")
-                                                         )
-        return dir
 
-    def get_file_location(self):
-        location = QtWidgets.QFileDialog.getOpenFileName(None, 'Select file:',
-                                                         os.path.expanduser('~')
-                                                         )
-        return location
+        # extraction_process
+        self.ui.btn_tool_1.clicked.connect(lambda: self.get_item_path(object_to_write=self.ui.lineEdit_1,
+                                                                      item='folder'))
+        self.ui.btn_1.clicked.connect(self.extraction)
+        # mapping_process
+        self.ui.btn_tool_2.clicked.connect(lambda: self.get_item_path(object_to_write=self.ui.lineEdit_2,
+                                                                      item='file'))
+        self.ui.btn_4.clicked.connect(mapping_process)
+        # self.ui.btn_export.clicked.connect(lambda: self.save_table('/Users/ivanov.ev/Desktop/', 'test'))
+        # self.ui.btn_3.clicked.connect(calculation_process)
+        # add event
+
+    def get_item_path(self, item='file', object_to_write=None):
+
+        try:
+            if item == 'file':
+                path = QtWidgets.QFileDialog.getOpenFileName(self, 'Open file')[0]
+            elif item == 'folder':
+                path = QtWidgets.QFileDialog.getExistingDirectory(None, f'Select a {item}:', os.path.expanduser("~"))
+
+            if object_to_write is None:
+                self.path = path
+                return
+            else:
+                object_to_write.setText(path)
+                return
+        except Exception as e:
+            self.msg = CriticalMessage()
+            self.msg.setInformativeText(str(e))
+
 
     def extraction(self):
-        dir = self.get_directory()
-        self.table = extraction_for_gui(dir)
-        model = PandasModel(self.table)
-        self.ui.table_1.setModel(model)
+        df = extraction_for_gui(self.ui.lineEdit_1.text())
+        try:
+            model = PandasModel(df)
+            self.ui.table_1.setModel(model)
+        except Exception as e:
+            self.msg = CriticalMessage()
+            self.msg.setInformativeText(str(e))
 
     def get_mapping_file(self):
         dir = self.get_file_location()
@@ -111,3 +130,14 @@ class PandasModel(QAbstractTableModel):
                 return str(self._dataframe.index[section])
 
         return None
+
+
+class CriticalMessage(QtWidgets.QMessageBox):
+    def __init__(self):
+        super(CriticalMessage, self).__init__()
+        self.setIcon(QtWidgets.QMessageBox.Critical)
+        self.setText("Error")
+        self.setInformativeText('More information')
+        self.setWindowTitle("Error")
+
+

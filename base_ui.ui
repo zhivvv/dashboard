@@ -67,27 +67,14 @@
              <string>Choose file</string>
             </property>
             <layout class="QFormLayout" name="formLayout">
-             <item row="0" column="0">
-              <widget class="QLineEdit" name="lineEdit_1">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="readOnly">
-                <bool>true</bool>
-               </property>
-              </widget>
-             </item>
-             <item row="0" column="1">
+             <item row="1" column="1">
               <widget class="QToolButton" name="btn_tool_1">
                <property name="text">
                 <string>...</string>
                </property>
               </widget>
              </item>
-             <item row="1" column="0" colspan="2">
+             <item row="3" column="0" colspan="2">
               <widget class="QPushButton" name="btn_1">
                <property name="sizePolicy">
                 <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
@@ -106,31 +93,18 @@
                </property>
               </widget>
              </item>
-             <item row="2" column="0">
-              <widget class="QPushButton" name="btn_export">
-               <property name="text">
-                <string>Export to Excel</string>
+             <item row="4" column="0">
+              <widget class="Line" name="line">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
                </property>
               </widget>
              </item>
+             <item row="1" column="0">
+              <widget class="QLineEdit" name="lineEdit_1"/>
+             </item>
             </layout>
            </widget>
-          </item>
-          <item>
-           <spacer name="verticalSpacer_2">
-            <property name="orientation">
-             <enum>Qt::Vertical</enum>
-            </property>
-            <property name="sizeType">
-             <enum>QSizePolicy::Maximum</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>20</width>
-              <height>50</height>
-             </size>
-            </property>
-           </spacer>
           </item>
           <item>
            <widget class="QLabel" name="label_3">
@@ -171,7 +145,7 @@
               </widget>
              </item>
              <item row="1" column="1">
-              <widget class="QToolButton" name="toolButton_2">
+              <widget class="QToolButton" name="btn_tool_2">
                <property name="text">
                 <string>...</string>
                </property>
