@@ -9,8 +9,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1031</width>
-    <height>727</height>
+    <width>976</width>
+    <height>684</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -67,6 +67,16 @@
              <string>Choose file</string>
             </property>
             <layout class="QFormLayout" name="formLayout">
+             <item row="1" column="0">
+              <widget class="QLineEdit" name="lineEdit_1">
+               <property name="readOnly">
+                <bool>true</bool>
+               </property>
+               <property name="placeholderText">
+                <string>choose folder</string>
+               </property>
+              </widget>
+             </item>
              <item row="1" column="1">
               <widget class="QToolButton" name="btn_tool_1">
                <property name="text">
@@ -93,15 +103,19 @@
                </property>
               </widget>
              </item>
-             <item row="4" column="0">
+             <item row="4" column="0" colspan="2">
+              <widget class="QPushButton" name="btn_save_extraction">
+               <property name="text">
+                <string>Export to Excel</string>
+               </property>
+              </widget>
+             </item>
+             <item row="5" column="0">
               <widget class="Line" name="line">
                <property name="orientation">
                 <enum>Qt::Horizontal</enum>
                </property>
               </widget>
-             </item>
-             <item row="1" column="0">
-              <widget class="QLineEdit" name="lineEdit_1"/>
              </item>
             </layout>
            </widget>
@@ -142,6 +156,15 @@
                <property name="readOnly">
                 <bool>true</bool>
                </property>
+               <property name="placeholderText">
+                <string>choose file</string>
+               </property>
+               <property name="cursorMoveStyle">
+                <enum>Qt::LogicalMoveStyle</enum>
+               </property>
+               <property name="clearButtonEnabled">
+                <bool>true</bool>
+               </property>
               </widget>
              </item>
              <item row="1" column="1">
@@ -170,6 +193,13 @@
                </property>
               </widget>
              </item>
+             <item row="3" column="0" colspan="2">
+              <widget class="QPushButton" name="btn_save_mapping">
+               <property name="text">
+                <string>Export to Excel</string>
+               </property>
+              </widget>
+             </item>
             </layout>
            </widget>
           </item>
@@ -192,7 +222,14 @@
          </layout>
         </item>
         <item>
-         <widget class="QTableView" name="table_1"/>
+         <layout class="QVBoxLayout" name="verticalLayout_3">
+          <item>
+           <widget class="QTableView" name="table_1"/>
+          </item>
+          <item>
+           <widget class="QTableWidget" name="tableWidget"/>
+          </item>
+         </layout>
         </item>
        </layout>
       </widget>
