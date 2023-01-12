@@ -34,15 +34,23 @@ class GUI(QtWidgets.QMainWindow):
         self.ui.btn_save_mapping.clicked.connect(lambda: self.save_table(self.mapping, file_name='mapping'))
 
 
-        # extraction_process
+        # add data folder
         self.ui.btn_tool_1.clicked.connect(lambda: self.get_item_path(object_to_write=self.ui.lineEdit_1,
                                                                       item='folder'))
+        # extract FEM
         self.ui.btn_1.clicked.connect(self.extraction)
 
-        # mapping_process
+        # add mapping file
         self.ui.btn_tool_2.clicked.connect(lambda: self.get_item_path(object_to_write=self.ui.lineEdit_2,
                                                                       item='file'))
+        # extract mapping file
+
+        # add data file
+
+        # applymap
         self.ui.btn_4.clicked.connect(mapping_process)
+
+        # add data file 
         # self.ui.btn_export.clicked.connect(lambda: self.save_table('/Users/ivanov.ev/Desktop/', 'test'))
         # self.ui.btn_3.clicked.connect(calculation_process)
         # add event
