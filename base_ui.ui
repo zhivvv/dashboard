@@ -10,7 +10,7 @@
     <x>0</x>
     <y>0</y>
     <width>976</width>
-    <height>684</height>
+    <height>647</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -43,19 +43,6 @@
            <number>0</number>
           </property>
           <item>
-           <widget class="QLabel" name="label_2">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text">
-             <string>Extraction</string>
-            </property>
-           </widget>
-          </item>
-          <item>
            <widget class="QGroupBox" name="groupBox">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Fixed" vsizetype="Maximum">
@@ -64,11 +51,21 @@
              </sizepolicy>
             </property>
             <property name="title">
-             <string>Choose file</string>
+             <string>Extraction process</string>
             </property>
             <layout class="QFormLayout" name="formLayout">
              <item row="1" column="0">
-              <widget class="QLineEdit" name="lineEdit_1">
+              <widget class="QLabel" name="label_15">
+               <property name="text">
+                <string>Add data folder</string>
+               </property>
+              </widget>
+             </item>
+             <item row="2" column="0">
+              <widget class="QLineEdit" name="lineEdit_datafolder">
+               <property name="alignment">
+                <set>Qt::AlignCenter</set>
+               </property>
                <property name="readOnly">
                 <bool>true</bool>
                </property>
@@ -77,15 +74,15 @@
                </property>
               </widget>
              </item>
-             <item row="1" column="1">
-              <widget class="QToolButton" name="btn_tool_1">
+             <item row="2" column="1">
+              <widget class="QToolButton" name="btn_tool_choose_folder">
                <property name="text">
                 <string>...</string>
                </property>
               </widget>
              </item>
-             <item row="3" column="0" colspan="2">
-              <widget class="QPushButton" name="btn_1">
+             <item row="4" column="0" colspan="2">
+              <widget class="QPushButton" name="btn_extract_fem">
                <property name="sizePolicy">
                 <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                  <horstretch>0</horstretch>
@@ -103,17 +100,10 @@
                </property>
               </widget>
              </item>
-             <item row="4" column="0" colspan="2">
+             <item row="5" column="0" colspan="2">
               <widget class="QPushButton" name="btn_save_extraction">
                <property name="text">
                 <string>Export to Excel</string>
-               </property>
-              </widget>
-             </item>
-             <item row="5" column="0">
-              <widget class="Line" name="line">
-               <property name="orientation">
-                <enum>Qt::Horizontal</enum>
                </property>
               </widget>
              </item>
@@ -121,17 +111,17 @@
            </widget>
           </item>
           <item>
-           <widget class="QLabel" name="label_3">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
+           <spacer name="verticalSpacer_2">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
             </property>
-            <property name="text">
-             <string>Mapping</string>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>20</width>
+              <height>40</height>
+             </size>
             </property>
-           </widget>
+           </spacer>
           </item>
           <item>
            <widget class="QGroupBox" name="groupBox_2">
@@ -142,16 +132,26 @@
              </sizepolicy>
             </property>
             <property name="title">
-             <string>Choose mapping file</string>
+             <string>Mapping process</string>
             </property>
             <layout class="QFormLayout" name="formLayout_2">
              <item row="1" column="0">
-              <widget class="QLineEdit" name="lineEdit_2">
+              <widget class="QLabel" name="label_9">
+               <property name="text">
+                <string>Add mapping file</string>
+               </property>
+              </widget>
+             </item>
+             <item row="2" column="0">
+              <widget class="QLineEdit" name="lineEdit_mapping_file">
                <property name="sizePolicy">
                 <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
                  <horstretch>0</horstretch>
                  <verstretch>0</verstretch>
                 </sizepolicy>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignCenter</set>
                </property>
                <property name="readOnly">
                 <bool>true</bool>
@@ -167,15 +167,73 @@
                </property>
               </widget>
              </item>
-             <item row="1" column="1">
-              <widget class="QToolButton" name="btn_tool_2">
+             <item row="2" column="1">
+              <widget class="QToolButton" name="btn_tool_choose_mapping_file">
                <property name="text">
                 <string>...</string>
                </property>
               </widget>
              </item>
-             <item row="2" column="0" colspan="2">
-              <widget class="QPushButton" name="btn_4">
+             <item row="3" column="0" colspan="2">
+              <widget class="QPushButton" name="btn_apply_map_2">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="minimumSize">
+                <size>
+                 <width>0</width>
+                 <height>0</height>
+                </size>
+               </property>
+               <property name="text">
+                <string>Extract mapping file</string>
+               </property>
+              </widget>
+             </item>
+             <item row="4" column="0">
+              <widget class="QLabel" name="label_14">
+               <property name="text">
+                <string>Add data file</string>
+               </property>
+              </widget>
+             </item>
+             <item row="5" column="0">
+              <widget class="QLineEdit" name="lineEdit_datafile">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignCenter</set>
+               </property>
+               <property name="readOnly">
+                <bool>true</bool>
+               </property>
+               <property name="placeholderText">
+                <string>choose file</string>
+               </property>
+               <property name="cursorMoveStyle">
+                <enum>Qt::LogicalMoveStyle</enum>
+               </property>
+               <property name="clearButtonEnabled">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+             <item row="5" column="1">
+              <widget class="QToolButton" name="btn_tool_choos_data_file">
+               <property name="text">
+                <string>...</string>
+               </property>
+              </widget>
+             </item>
+             <item row="6" column="0" colspan="2">
+              <widget class="QPushButton" name="btn_apply_map">
                <property name="sizePolicy">
                 <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                  <horstretch>0</horstretch>
@@ -193,41 +251,41 @@
                </property>
               </widget>
              </item>
-             <item row="3" column="0" colspan="2">
+             <item row="7" column="0" colspan="2">
               <widget class="QPushButton" name="btn_save_mapping">
                <property name="text">
                 <string>Export to Excel</string>
                </property>
               </widget>
              </item>
+             <item row="8" column="0" colspan="2">
+              <spacer name="verticalSpacer">
+               <property name="orientation">
+                <enum>Qt::Vertical</enum>
+               </property>
+               <property name="sizeType">
+                <enum>QSizePolicy::Minimum</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>20</width>
+                 <height>50</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
             </layout>
            </widget>
-          </item>
-          <item>
-           <spacer name="verticalSpacer">
-            <property name="orientation">
-             <enum>Qt::Vertical</enum>
-            </property>
-            <property name="sizeType">
-             <enum>QSizePolicy::Minimum</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>20</width>
-              <height>50</height>
-             </size>
-            </property>
-           </spacer>
           </item>
          </layout>
         </item>
         <item>
          <layout class="QVBoxLayout" name="verticalLayout_3">
           <item>
-           <widget class="QTableView" name="table_1"/>
+           <widget class="QTableView" name="table_fem_data"/>
           </item>
           <item>
-           <widget class="QTableWidget" name="tableWidget"/>
+           <widget class="QTableWidget" name="table_mapping_data"/>
           </item>
          </layout>
         </item>
@@ -541,11 +599,6 @@
     <bool>false</bool>
    </attribute>
   </widget>
-  <action name="actionClose">
-   <property name="text">
-    <string>Close</string>
-   </property>
-  </action>
  </widget>
  <resources/>
  <connections/>

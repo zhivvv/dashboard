@@ -1,0 +1,15 @@
+[table_name]:
+load * inline[
+col_1, col_2
+tt, 1
+tt, 1
+aa, 3
+aa, 5
+];
+
+[cross]:
+Crosstable ('parametr', 'value', 1) 
+load *
+Resident table_name;
+
+Drop Table table_name;
