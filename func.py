@@ -124,6 +124,9 @@ def process_decorator(process_function):
 class MatchingProcess:
     # TODO matching process as service class
 
+    # choices -
+    # query -
+
     def __init__(self, choices: pd.DataFrame | pd.Series | list):
         self.choices = choices
         self.result: pd.DataFrame = pd.DataFrame()
@@ -466,37 +469,6 @@ def list_files_in_folder(folder_path_to_list: str) -> list:
     files_list = check_excel_files_list(folder_path_to_list)
     return files_list
 
-
-def select_files_to_load(folder_path_to_list, sheet_name=None):
-    file_name_list_to_load = []
-    try:
-        file_list = list_files_in_folder(folder_path_to_list)
-
-    except FileNotFoundError:
-        print(Fore.RED + 'WARNING: Specified directory has not been found' + Style.RESET_ALL)
-        sys.exit()
-
-    # Input file number from displayed list and load Excel file
-    hint = 'Which file do you want to download (input a number above): '
-    limit = [i for i in range(len(file_list))]
-    file_number = user_input(input_type=int, limit=limit, label=hint, distinct=True)
-
-    df: pd.DataFrame = pd.read_excel(os.path.join(folder_path_to_list, file_list[file_number - 1]),
-                                     sheet_name=sheet_name)
-    df: pd.DataFrame = pd.ExcelFile(d)
-
-    return df
-
-
-def groupby_key_field(df: pd.DataFrame, key: list, column_name='value', aggr_func='sum'):
-    # Incorrect function
-
-    df = df.set_index(key).groupby(by=key).sum()
-    df = df.reset_index()
-
-    return df
-
-
 def rename_dict(a_list: list, dictionary: dict, minscore: int):
     # if column has not been found or score equals then store name to mapping
     # todo get rid!
@@ -535,22 +507,22 @@ def rename_dict(a_list: list, dictionary: dict, minscore: int):
     return dict_for_rename
 
 
-def read_multiple_excel_files(files_path_list: list, sheet_list: list):
-    # todo move to Folder class
-    dataframe_dictionary = dict()
-
-    for file, sheet_name in zip(files_path_list, sheet_list):
-
-        file_base_name = os.path.basename(file)
-        try:
-            load = pd.ExcelFile(file).parse(sheet_name=sheet_name)
-            dataframe_dictionary[file_base_name] = load
-        except:
-            dataframe_dictionary[file] = None
-            print(f'{file_base_name} has not been loaded')
-            continue
-
-    return dataframe_dictionary
+# def read_multiple_excel_files(files_path_list: list, sheet_list: list):
+#     # todo move to Folder class
+#     dataframe_dictionary = dict()
+#
+#     for file, sheet_name in zip(files_path_list, sheet_list):
+#
+#         file_base_name = os.path.basename(file)
+#         try:
+#             load = pd.ExcelFile(file).parse(sheet_name=sheet_name)
+#             dataframe_dictionary[file_base_name] = load
+#         except:
+#             dataframe_dictionary[file] = None
+#             print(f'{file_base_name} has not been loaded')
+#             continue
+#
+#     return dataframe_dictionary
 
 
 def find_the_best_match():

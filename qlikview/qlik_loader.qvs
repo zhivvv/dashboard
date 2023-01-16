@@ -8,7 +8,7 @@ aa, 5
 ];
 
 [cross]:
-Crosstable ('parametr', 'value', 1) 
+crosstable ('parameter', 'value', 1)
 load *
 Resident table_name;
 

@@ -38,15 +38,14 @@ class MappingProcess:
 
         return self
 
-    def mapping_execute(self):
-        Mapping.create_mapping_table()
-
-        return res
+    # def mapping_execute(self):
+    #     Mapping.create_mapping_table()
+    #
+    #     return res
 
 
 @func.process_decorator
 def mapping_process():
-
     extracted_df_file = func.Folder(settings.fem_folder_results).select_file(xls=True)
     extracted_df_path = os.path.join(settings.fem_folder_results, extracted_df_file)
     fem_df = pd.ExcelFile(extracted_df_path).parse()
@@ -79,7 +78,6 @@ class Mapping:
             self.result = pd.concat([self.result, df], axis=0)
 
         return self.result
-
 
 
 if __name__ == '__main__':

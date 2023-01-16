@@ -36,8 +36,8 @@ def decorator_file_preparing(extraction_transform_process):
 
     return wrapper
 
-def extraction_for_gui(folder):
 
+def extraction_for_gui(folder):
     errors = dict()
     result_df = None
 
@@ -53,7 +53,6 @@ def extraction_for_gui(folder):
         result_df = pd.concat([result_df, fem], axis=0)
 
     return result_df
-
 
 
 @decorator_entire_process
