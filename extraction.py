@@ -1,9 +1,6 @@
 import os.path
-import time
-from os import path
 import func
 import settings
-from settings import base_location, version, fem_sheet_name
 import pandas as pd
 import traceback as tb
 import numpy as np

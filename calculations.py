@@ -1,13 +1,12 @@
 import os
-from dataclasses import dataclass
-
 import numpy as np
 import pandas as pd
-import pyinputplus as pyip
 import func
 import settings
 import tqdm
 import itertools
+
+# get data from file
 
 base_year = 2022
 rate = 0.14
@@ -85,14 +84,6 @@ def pivot_typecf(data: pd.DataFrame, column_index: list):
 
     result = result.reset_index()
     return result
-
-
-def test():
-    effects = ['npv', 'umv']
-    result = 0
-    for eff in effects:
-        result += data[eff]
-        result -= data[f'capex_cut_{eff}']
 
 
 def discount_factor(years: pd.Series, base_year: int,
@@ -244,7 +235,6 @@ def project_calculation(data: pd.DataFrame):
                                   )
 
     return result_data
-
 
 
 def amortization_calc(capex: pd.Series) -> pd.Series:

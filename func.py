@@ -1,18 +1,12 @@
-# import xlrd, xlwings
-from collections import namedtuple
 from fuzzywuzzy import fuzz
 from fuzzywuzzy import process as fuzz_process
-from colorama import Fore, Style, Back
+from colorama import Fore, Style
 import os.path
-import math
 import pandas as pd
-import numpy as np
 from datetime import date
 from warnings import filterwarnings
 import datetime
 import time
-import traceback
-import sys
 import settings
 import pyinputplus as pyip
 
@@ -45,6 +39,30 @@ filterwarnings('ignore', category=UserWarning, module='openpyxl')
 #     df: pd.DataFrame = pd.ExcelFile(d)
 #
 #     return df
+
+
+class File:
+
+    def __init__(self, file_path):
+        self.path = file_path
+
+    def get_file_size(self):
+        bytes_in_megabyte = 1024 * 1024
+        size = os.path.getsize(self.path) / bytes_in_megabyte
+        return size
+
+    def get_create_date(self):
+        # s1 = path.getctime(file_path)
+        s1 = os.stat(self.path).st_birthtime
+        s2 = datetime.datetime.strptime(time.ctime(s1), '%c').date()
+        s3 = s2.strftime('%d/%m/%Y')
+        return s3
+
+    def get_mod_date(self):
+        s1 = os.path.getmtime(self.path)
+        s2 = datetime.datetime.strptime(time.ctime(s1), '%c').date()
+        s3 = s2.strftime('%d/%m/%Y')
+        return s3
 
 
 class Folder:
@@ -123,13 +141,12 @@ def process_decorator(process_function):
 
 class MatchingProcess:
     # TODO matching process as service class
-
-    # choices -
-    # query -
+    # choices - variants
+    # query - what we want to find in choices
 
     def __init__(self, choices: pd.DataFrame | pd.Series | list):
         self.choices = choices
-        self.result: pd.DataFrame = pd.DataFrame()
+        self.result = pd.DataFrame()
 
     def best_sequence_match(self, query: pd.Series | list,
                             score_cutoff_choice=80,
@@ -371,30 +388,6 @@ def find_children(file_path):
     return parent_dict
 
 
-def get_file_size(file_path):
-    bytes_in_megabyte = 1024 * 1024
-    size = os.path.getsize(file_path) / bytes_in_megabyte
-
-    return size
-
-
-def get_create_date(file_path):
-    # s1 = path.getctime(file_path)
-    s1 = os.stat(file_path).st_birthtime
-    s2 = datetime.datetime.strptime(time.ctime(s1), '%c').date()
-    s3 = s2.strftime('%d/%m/%Y')
-
-    return s3
-
-
-def get_mod_date(file_path):
-    s1 = os.path.getmtime(file_path)
-    s2 = datetime.datetime.strptime(time.ctime(s1), '%c').date()
-    s3 = s2.strftime('%d/%m/%Y')
-
-    return s3
-
-
 def tmp(df: pd.DataFrame):
     df = df.applymap(lambda x: x.strip() if isinstance(x, str) else x)
     return df
@@ -428,10 +421,6 @@ def safe_dataframes_to_excel(dataframes: list,
                              sheet_names: list,
                              folder_to_save=os.path.join(settings.base_location, 'tmp'),
                              file_name='untitled'):
-    print('--------------')
-    print('File saving')
-    print('--------------')
-
     today_date = date.today().strftime("%d%m%Y")
 
     def save_process(exist=True):
@@ -468,6 +457,7 @@ def list_files_in_folder(folder_path_to_list: str) -> list:
     # todo drop function if possible
     files_list = check_excel_files_list(folder_path_to_list)
     return files_list
+
 
 def rename_dict(a_list: list, dictionary: dict, minscore: int):
     # if column has not been found or score equals then store name to mapping
@@ -506,7 +496,6 @@ def rename_dict(a_list: list, dictionary: dict, minscore: int):
 
     return dict_for_rename
 
-
 # def read_multiple_excel_files(files_path_list: list, sheet_list: list):
 #     # todo move to Folder class
 #     dataframe_dictionary = dict()
@@ -525,148 +514,17 @@ def rename_dict(a_list: list, dictionary: dict, minscore: int):
 #     return dataframe_dictionary
 
 
-def find_the_best_match():
-    # todo move to MatchingProcess class
-    # Function loops through columns in mapping file and finds the best match
-    pass
-
-
-def match_process(query: int,
-                  choices: list,
-                  score_cutoff_choice=80,
-                  show_results_in_terminal=False,
-                  show_matched=False) -> str | list:
-    scorers_coef = {fuzz.token_sort_ratio: 0.11,  # 1
-                    fuzz.QRatio: 0.11,  # 2
-                    fuzz.UQRatio: 0.11,  # 3
-                    fuzz.UWRatio: 0.11,  # 4
-                    fuzz.WRatio: 0.11,  # 5
-                    fuzz.partial_ratio: 0.11,  # 6
-                    fuzz.ratio: 0.11,  # 7
-                    fuzz.partial_token_set_ratio: 0.11,  # 8
-                    fuzz.partial_token_sort_ratio: 0.11  # 9
-                    }
-
-    # processors = []   integrate processors
-    results = {x: 0 for x in choices}
-
-    for scorer in scorers_coef:
-        # for processor in processors:
-        match = fuzz_process.extractOne(query=query,
-                                        choices=choices,
-                                        scorer=scorer,
-                                        # processor=processor,
-                                        score_cutoff=score_cutoff_choice
-                                        )
-        if match is None:
-            continue
-
-        results[match[0]] += match[1] * scorers_coef[scorer]
-
-    match_process_result = check_mapping_results(results,
-                                                 query,
-                                                 score_cutoff_choice,
-                                                 show_results_in_terminal
-                                                 )
-
-    if show_matched:
-        return match_process_result
-    else:
-        return match_process_result[1]
-
-
-def check_mapping_results(matching_results: dict,
-                          query: str,
-                          score_cutoff_choice: int,
-                          show_results_in_terminal: bool) -> list:
-    # todo move to MatchingProcess class
-    max_score_match = max(matching_results, key=matching_results.get)
-    max_score = max(matching_results.values())
-    label_matched = 'matched'
-    label_did_not_matched = 'not found'
-
-    label = label_did_not_matched if max_score < score_cutoff_choice else label_matched
-
-    if show_results_in_terminal:
-        print('----------------')
-        print(query, ' -- ', max_score_match, ' (matched)')
-        print('----------------')
-        print(matching_results)
-        print()
-    return [query, max_score_match, label, max_score]
-
-
-def fuzzmatch(input_list: list | pd.Series,
-              choices: list | pd.Series,
-              score_cutoff_choice: int = 75,
-              show_results_in_terminal: bool = False,
-              show_matched: bool = False) -> list | pd.Series | dict:
-    # todo move to MatchingProcess class
-    match_results = dict()
-
-    # Get exact structure
-    if isinstance(input_list, pd.Series):
-        input_list_process = input_list.unique().tolist()
-    else:
-        input_list_process = input_list
-
-    if isinstance(choices, pd.Series):
-        choices = choices.unique().tolist()
-    else:
-        choices = choices
-
-    for name in input_list_process:
-        processed_choice = match_process(query=name,
-                                         choices=choices,
-                                         score_cutoff_choice=score_cutoff_choice,
-                                         show_results_in_terminal=show_results_in_terminal,
-                                         show_matched=show_matched)
-        match_results[name] = processed_choice
-
-    # if isinstance(input_list, pd.Series):
-    #     result = input_list.map(match_results)
-    # else:
-    #     result = match_results.values()
-
-    # Add more complex logic
-
-    # return result
-    return match_results
-
-
-def parse_match_results(match_results: dict) -> pd.DataFrame:
-    # todo move to MatchingProcess class
-    dataframe_columns = ['query', 'result', 'matched', 'score']
-    data = []
-
-    for value in match_results.values():
-        data.append(value)
-
-    match_results_dataframe = pd.DataFrame(data, columns=dataframe_columns)
-
-    return match_results_dataframe
-
-
-def save_formulas_to_excel():
-    import openpyxl
-    from openpyxl.cell import Cell
-    from openpyxl import Workbook
-    wb: Workbook = openpyxl.load_workbook(settings.OPENPYXL_EXTRACTION_PATH)
-    ws = wb[settings.openpyxl_sheet_name]
-    cellObj: Cell
-    for i, cellObj in enumerate(ws['C'], 1):
-        if i == 1:
-            continue
-        print(ws['B'][0])
-
-        cellObj.value = "=vlookup(A{0}, A:B, 2, 0)".format(i)
-    wb.save(settings.OPENPYXL_EXTRACTION_PATH)
-
-
-def check_function():
-    pass
-
-
-if __name__ == '__main__':
-    check_function()
-    print()
+# def save_formulas_to_excel():
+#     import openpyxl
+#     from openpyxl.cell import Cell
+#     from openpyxl import Workbook
+#     wb: Workbook = openpyxl.load_workbook(settings.OPENPYXL_EXTRACTION_PATH)
+#     ws = wb[settings.openpyxl_sheet_name]
+#     cellObj: Cell
+#     for i, cellObj in enumerate(ws['C'], 1):
+#         if i == 1:
+#             continue
+#         print(ws['B'][0])
+#
+#         cellObj.value = "=vlookup(A{0}, A:B, 2, 0)".format(i)
+#     wb.save(settings.OPENPYXL_EXTRACTION_PATH)
