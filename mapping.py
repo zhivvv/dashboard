@@ -9,7 +9,9 @@ class Mapping(func.MatchingProcess):
 
     def __init__(self,
                  file_for_mapping: pd.DataFrame,
-                 mapping: pd.DataFrame):
+                 mapping: pd.DataFrame,
+                 choices: pd.DataFrame | pd.Series | list):
+        super(Mapping, self).__init__(choices=choices)
         self.file_for_mapping = file_for_mapping
         self.mapping = mapping
         self.result: pd.DataFrame = pd.DataFrame()

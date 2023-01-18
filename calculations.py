@@ -16,12 +16,31 @@ amort_period = 5
 effect_period = 5
 
 
+class CalculationPrep:
+
+    # data format
+    # index (year or month) | effect | capex | opex | service |
+    # add data check and write tests
+    def __init__(self, data):
+        self.data = data
+
+
+class Calculation:
+    def __init__(self):
+        self.data = data
+
+
+class BatchProcessing(CalculationPrep):
+    def __init__(self):
+        super(BatchProcessing, self).__init__()
+
+# todo move to another module
 def choose_excel_file(folder_path, sheet_name=0):
     file_path = os.path.join(folder_path, func.single_input_file(folder_path))
     result = pd.ExcelFile(file_path).parse(sheet_name)
     return result
 
-
+# todo move to another module
 def apply_mapping_to_fem(fillna=True):
     fem: pd.DataFrame = choose_excel_file(settings.fem_folder_results,
                                           sheet_name=settings.fem_sheet_name)
@@ -67,10 +86,6 @@ def calculation_process():
     # load data
     fem = apply_mapping_to_fem(fillna=True)
     fem = move_costs_to_typecf(fem)
-
-    print('--------------')
-    print('Calculation')
-    print('--------------')
 
     return project_calculation(fem)
 
