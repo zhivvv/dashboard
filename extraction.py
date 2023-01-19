@@ -199,12 +199,12 @@ class FemTransform:
             return df
 
         self._df = (self._df
-                    .dropna(how='all')
-                    .loc[:, ~(self._df == 0).all()]
-                    .pipe(apply_float_check, 'value')
-                    .dropna(subset=['value', 'project'])
-                    .loc[~(self._df['value'] == 0)]
-                    )
+                        .dropna(how='all')
+                        .loc[:, ~(self._df == 0).all()]
+                        .pipe(apply_float_check, 'value')
+                        .dropna(subset=['value', 'project'])
+                        .loc[~(self._df['value'] == 0)]
+                        )
 
         return self
 

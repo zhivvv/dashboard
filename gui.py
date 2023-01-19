@@ -25,14 +25,12 @@ class GUI(QtWidgets.QMainWindow):
         self.msg = None
         self.path = None
 
-
     # Define events
     def events(self):
 
         # save_table
         self.ui.btn_save_extraction.clicked.connect(lambda: self.save_table(self.table, file_name='extraction'))
         self.ui.btn_save_mapping.clicked.connect(lambda: self.save_table(self.mapping, file_name='mapping'))
-
 
         # add data folder
         self.ui.btn_tool_1.clicked.connect(lambda: self.get_item_path(object_to_write=self.ui.lineEdit_1,
@@ -74,7 +72,6 @@ class GUI(QtWidgets.QMainWindow):
             self.msg = CriticalMessage()
             self.msg.setInformativeText(str(e))
 
-
     def extraction(self):
         self.table = extraction_for_gui(self.ui.lineEdit_1.text())
         try:
@@ -84,8 +81,6 @@ class GUI(QtWidgets.QMainWindow):
         except Exception as e:
             self.msg = CriticalMessage()
             self.msg.setInformativeText(str(e))
-
-
 
     def get_mapping_file(self):
         pass
@@ -102,12 +97,7 @@ class GUI(QtWidgets.QMainWindow):
         table_name.to_excel(excel_writer=path_to_save, sheet_name=default_sheet_name)
         Info(label=f'File successfully saved in {path_to_save}')
 
-
         #     TODO Write function that checks existence of file in selected folder
-
-
-
-
 
 
 class PandasModel(QAbstractTableModel):
@@ -185,4 +175,3 @@ class Info(QtWidgets.QMessageBox):
         self.setStandardButtons(self.Ok)
         # self.setIcon(self.Question)
         self.exec()
-

@@ -140,53 +140,66 @@ def process_decorator(process_function):
 
 
 class MatchingProcess:
-    # TODO matching process as service class
-    # choices - variants
-    # query - what we want to find in choices
 
-    def __init__(self, choices: pd.DataFrame | pd.Series | list):
+    def __init__(self, choices: pd.Series | list):
+        # default parameters
         self.choices = choices
-        self.result = pd.DataFrame()
+        self.__score_cutoff_choice = 80
+        self.__show_results_in_terminal = False
+        self.__drop_not_best = True
+        self.__add_column_name = False
+        self.__show_matched = False
+        self.__percent_result = None
 
-    def best_sequence_match(self, query: pd.Series | list,
-                            score_cutoff_choice=80,
-                            show_results_in_terminal=False,
-                            drop_not_best: bool = True,
-                            add_column_name: str | bool = False
-                            ) -> pd.DataFrame:
+    # getter and setter methods
 
-        for series_name in self.choices:
-            mapping_df = self.choices
-            self.choices = self.choices[series_name]
+    @property
+    def show_matched(self):
+        return self.__score_cutoff_choice
 
-            res = self.sequence_match(query=query,
-                                      score_cutoff_choice=score_cutoff_choice,
-                                      show_results_in_terminal=show_results_in_terminal)
+    @show_matched.setter
+    def show_matched(self, flag: bool):
 
-            self.result = pd.concat([self.result, res], axis=0)
+        if not isinstance(flag, bool):
+            raise ValueError
 
-            self.choices = mapping_df
+        self.__show_matched = flag
 
-        self.result.reset_index(drop=True, inplace=True)
+    @property
+    def score_cutoff_choice(self):
+        return self.__score_cutoff_choice
 
-        if drop_not_best:
-            ind_max = self.result.groupby(['query'])['score'].idxmax()
-            self.result = self.result.loc[ind_max, :]
+    @score_cutoff_choice.setter
+    def score_cutoff_choice(self, value: int):
 
-        self.result.index = self.result['result_index']
-        self.result.drop(columns='result_index', inplace=True)
+        if value not in range(0, 100):
+            raise ValueError
 
-        if add_column_name:
-            self.result['column'] = add_column_name
+        self.__score_cutoff_choice = value
 
-        return self.result
+    @property
+    def show_results_in_terminal(self):
+        return self.__show_results_in_terminal
 
-    def single_match(self,
-                     query: str,
-                     score_cutoff_choice: int = 80,
-                     show_results_in_terminal: bool = False,
-                     show_matched: bool = True) -> str | list:
+    @show_results_in_terminal.setter
+    def show_results_in_terminal(self, flag: bool):
 
+        if not isinstance(flag, bool):
+            raise ValueError
+
+        self.__show_results_in_terminal = flag
+
+    # Methods
+
+    def single_match(self, query: str, show_max=True, get_score=False) -> dict | tuple | str:
+        """
+
+        :param query: just a word (str) that need to be searched
+        :param show_max:
+        :param get_score:
+        :return:
+
+        """
         scorers_coef = {fuzz.token_sort_ratio: 0.11,  # 1
                         fuzz.QRatio: 0.11,  # 2
                         fuzz.UQRatio: 0.11,  # 3
@@ -198,74 +211,32 @@ class MatchingProcess:
                         fuzz.partial_token_sort_ratio: 0.11  # 9
                         }
 
-        # check query str
-
         if isinstance(self.choices, pd.Series):
             choices = self.choices.dropna().tolist()
         else:
             choices = self.choices
 
-        # processors = []   integrate processors
         results = {x: 0 for x in choices}
 
         for scorer in scorers_coef:
-            # for processor in processors:
             match = fuzz_process.extractOne(query=query,
                                             choices=self.choices,
                                             scorer=scorer,
-                                            # processor=processor,
-                                            score_cutoff=score_cutoff_choice
-                                            )
+                                            score_cutoff=self.score_cutoff_choice)
             if match is None:
                 continue
 
             results[match[0]] += match[1] * scorers_coef[scorer]
 
-        match_process_result = (MatchingProcess
-                                .check_mapping_results(results,
-                                                       query,
-                                                       score_cutoff_choice,
-                                                       show_results_in_terminal
-                                                       )
-                                )
-        # add index in default table
+        if show_max:
+            res = max(results, key=results.get)
+            if get_score:
+                return res, max(results.values())
+            return res
 
-        if isinstance(self.choices, pd.Series):
-            result_index = self.choices[self.choices == match_process_result[1]].index.tolist()[0]
-            match_process_result.append(result_index)
+        return results
 
-        if show_matched:
-            return match_process_result
-        else:
-            return match_process_result[1]
-
-    @staticmethod
-    def check_mapping_results(matching_results: dict,
-                              query: str,
-                              score_cutoff_choice: int,
-                              show_results_in_terminal: bool
-                              ) -> list:
-
-        max_score_match = max(matching_results, key=matching_results.get)
-        max_score = max(matching_results.values())
-        label_matched = 'matched'
-        label_did_not_matched = 'not found'
-
-        label = label_did_not_matched if max_score < score_cutoff_choice else label_matched
-
-        if show_results_in_terminal:
-            print('----------------')
-            print(query, ' -- ', max_score_match, f' ({label})')
-            print('----------------')
-            print(matching_results)
-            print()
-        return [query, max_score_match, label, max_score]
-
-    def sequence_match(self,
-                       query: list | pd.Series,
-                       score_cutoff_choice: int = 75,
-                       show_results_in_terminal: bool = False
-                       ) -> pd.DataFrame:
+    def sequence_match(self, query: list | pd.Series) -> pd.DataFrame:
 
         result = dict()
 
@@ -276,17 +247,56 @@ class MatchingProcess:
             input_list_process = set([x for x in query if str(x) != 'nan'])
 
         for name in input_list_process:
-            processed_choice = self.single_match(query=name,
-                                                 score_cutoff_choice=score_cutoff_choice,
-                                                 show_results_in_terminal=show_results_in_terminal
-                                                 )
+            processed_choice = self.single_match(query=name)
 
             result[name] = processed_choice
 
-        return MatchingProcess.parse_match_results(result)
+        return MatchingProcess.__parse_match_results(result)
+
+    def best_sequence_match(self, query: pd.Series | list) -> pd.DataFrame:
+
+        result = pd.DataFrame()
+
+        for series_name in self.choices:
+            mapping_df = self.choices
+            self.choices = self.choices[series_name]
+
+            res = self.sequence_match(query=query)
+
+            result = pd.concat([result, res], axis=0)
+            self.choices = mapping_df
+
+        result.reset_index(drop=True, inplace=True)
+
+        if self.__drop_not_best:
+            ind_max = result.groupby(['query'])['score'].idxmax()
+            result = result.loc[ind_max, :]
+
+        result.index = result['result_index']
+        result.drop(columns='result_index', inplace=True)
+
+        if self.__add_column_name:
+            result['column'] = self.__add_column_name
+
+        return result
+
+    def mapping_table(self, query: pd.Series):
+
+        # self.choice must be pd.DataFrame, not pd.Series
+        result_names = self.choices.iloc[:, 0]
+        self.choices = self.choices.iloc[:, 1:]
+
+        result = self.best_sequence_match(query=query)
+
+        result.loc[:, 'chosen'] = result_names
+        result.reset_index(drop=True, inplace=True)
+
+        return result
+
+    # disabled methods
 
     @staticmethod
-    def parse_match_results(match_results: dict) -> pd.DataFrame:
+    def __parse_match_results(match_results: dict) -> pd.DataFrame:
         dataframe_columns = ['query', 'result', 'matched', 'score', 'result_index']
         data = []
 
@@ -297,34 +307,22 @@ class MatchingProcess:
 
         return match_results_dataframe
 
-    def mapping_table(self,
-                      query: pd.Series):
+    def __check_mapping_results(self, matching_results: dict, query: str) -> list:
 
-        # self.choice must be pd.DataFrame, not pd.Series
-        result_names = self.choices.iloc[:, 0]
-        self.choices = self.choices.iloc[:, 1:]
+        max_score_match = max(matching_results, key=matching_results.get)
+        max_score = max(matching_results.values())
+        label_matched = 'matched'
+        label_did_not_matched = 'not found'
 
-        self.best_sequence_match(query=query, drop_not_best=True, add_column_name=query.name)
-        self.result.loc[:, 'chosen'] = result_names
-        self.result.reset_index(drop=True, inplace=True)
+        label = label_did_not_matched if max_score < self.score_cutoff_choice else label_matched
 
-        return self.result
-
-
-class BasicProcessClass:
-
-    def __init__(self, data: dict | pd.DataFrame, process_name: str = 'untitled'):
-        self.name = process_name
-        self.data = data
-        self.user_choice: int | None = None
-        self.result = None
-
-    @process_decorator
-    def run(self):
-        pass
-
-    def save_file(self, dataframes, folder_path, file_name, ):
-        return self
+        if self.__show_results_in_terminal:
+            print('----------------')
+            print(query, ' -- ', max_score_match, f' ({label})')
+            print('----------------')
+            print(matching_results)
+            print()
+        return [query, max_score_match, label, max_score]
 
 
 def single_input_file(folder_path):
