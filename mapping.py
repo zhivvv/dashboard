@@ -2,45 +2,32 @@ import os
 import pandas as pd
 import func
 import settings
+from func import MatchingProcess
 
 
-class Mapping(func.MatchingProcess):
-    # columns_for_mapping = ['programme', 'dzo', 'typecf', 'subtypecf']
+def create_mapping_table(dict_to_change, mapping, name):
+    mapping_table = pd.DataFrame(pd.Series(dict_to_change, name='tmp'))
+    res = mapping_table.join(mapping.set_index(name), on='tmp') \
+        .reset_index().drop(['tmp'], axis=1)
 
-    def __init__(self,
-                 file_for_mapping: pd.DataFrame,
-                 mapping: pd.DataFrame,
-                 choices: pd.DataFrame | pd.Series | list):
-        super(Mapping, self).__init__(choices=choices)
-        self.file_for_mapping = file_for_mapping
-        self.mapping = mapping
-        self.result: pd.DataFrame = pd.DataFrame()
-
-    def apply_mapping_to_all_columns(self):
-
-        for col in self.file_for_mapping.columns:
-            if col not in self.mapping['name'].unique():
-                continue
-
-            tmp_mapping = self.mapping.loc[self.mapping['name'] == col, ['mapping', 'variant']]
-            df = func.MatchingProcess(tmp_mapping).mapping_table(query=self.file_for_mapping[col])
-            self.result = pd.concat([self.result, df], axis=0)
-
-        return self.result
+    return res
 
 
-@func.process_decorator
-def mapping_process():
-    extracted_df_file = func.Folder(settings.fem_folder_results).select_file(xls=True)
-    extracted_df_path = os.path.join(settings.fem_folder_results, extracted_df_file)
-    fem_df = pd.ExcelFile(extracted_df_path).parse()
-    mapping_file = pd.ExcelFile(settings.mapping_file_extract)
-    mapping_dict = mapping_file.parse(sheet_name=mapping_file.sheet_names)
+def get_mapping_table(data, mapping):
+    df = pd.DataFrame()
 
-    result = Mapping(mapping_dict, fem_df).create_mapping_table()
+    for column in data.columns:
+        if column not in mapping['name'].unique():
+            continue
 
-    return result
+        tmp_mapping = mapping.loc[mapping['name'] == column, ['mapping', 'variant']]
+        res = MatchingProcess(tmp_mapping['variant']).sequence_match(data[column])
+        res = create_mapping_table(res, tmp_mapping, 'variant')
+
+        df = pd.concat([df, res], axis=0)
+
+    return df
 
 
 if __name__ == '__main__':
-    mapping_process()
+    pass

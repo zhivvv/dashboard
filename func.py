@@ -13,34 +13,6 @@ import pyinputplus as pyip
 filterwarnings('ignore', category=UserWarning, module='openpyxl')
 
 
-# @numerated_list
-# def list_files_in_folder(folder_path_to_list: str) -> list:
-#     # todo drop function if possible
-#     files_list = check_excel_files_list(folder_path_to_list)
-#     return files_list
-#
-#
-# def select_files_to_load(folder_path_to_list, sheet_name=None):
-#     file_name_list_to_load = []
-#     try:
-#         file_list = list_files_in_folder(folder_path_to_list)
-#
-#     except FileNotFoundError:
-#         print(Fore.RED + 'WARNING: Specified directory has not been found' + Style.RESET_ALL)
-#         sys.exit()
-#
-#     # Input file number from displayed list and load Excel file
-#     hint = 'Which file do you want to download (input a number above): '
-#     limit = [i for i in range(len(file_list))]
-#     file_number = user_input(input_type=int, limit=limit, label=hint, distinct=True)
-#
-#     df: pd.DataFrame = pd.read_excel(os.path.join(folder_path_to_list, file_list[file_number - 1]),
-#                                      sheet_name=sheet_name)
-#     df: pd.DataFrame = pd.ExcelFile(d)
-#
-#     return df
-
-
 class File:
 
     def __init__(self, file_path):
@@ -63,6 +35,23 @@ class File:
         s2 = datetime.datetime.strptime(time.ctime(s1), '%c').date()
         s3 = s2.strftime('%d/%m/%Y')
         return s3
+
+    def add_extracting_time_info(self, df: pd.DataFrame):
+        extract_timestamp = datetime.datetime.now()
+
+        df['extracting_date'] = extract_timestamp.strftime('%d.%m.%Y')
+        df['extracting_time'] = extract_timestamp.strftime('%H:%M')
+
+        return df
+
+    def add_edit_time_info(self, df: pd.DataFrame, fem_folder, filename):
+        edit_timestamp = os.path.getmtime(os.path.join(fem_folder, filename))
+        datestamp = datetime.datetime.fromtimestamp(edit_timestamp)
+
+        df['edit_date'] = datestamp.strftime('%d.%m.%Y')
+        df['edit_time'] = datestamp.strftime('%H:%M')
+
+        return df
 
 
 class Folder:
@@ -114,29 +103,6 @@ class Folder:
 
     def file_exists(self, file: str):
         return os.path.exists(os.path.join(self.path, file))
-
-
-def timer(some_process):
-    def wrapper(*args, **kwargs):
-        time_started = datetime.datetime.now()
-        some_process(*args, **kwargs)
-        time_finished = datetime.datetime.now()
-        process_time = time_finished - time_started  # TODO add time format
-        print('(', process_time, ' sec)', sep='')
-
-    return wrapper
-
-
-def process_decorator(process_function):
-    @timer
-    def wrapper(*args, **kwargs):
-        print('--------------')
-        print('Process has just started')
-        print('--------------')
-        process_function(*args, **kwargs)
-        print(Fore.GREEN + 'Finished successfully' + Style.RESET_ALL, end=' ')
-
-    return wrapper
 
 
 class MatchingProcess:
@@ -193,11 +159,14 @@ class MatchingProcess:
 
     def single_match(self, query: str, show_max=True, get_score=False) -> dict | tuple | str:
         """
+        Description:
+
+        Function returns matching result for one string value.
 
         :param query: just a word (str) that need to be searched
-        :param show_max:
-        :param get_score:
-        :return:
+        :param show_max: return only max result
+        :param get_score: matching result (%)
+        :return: matching results or one result if show_max is True
 
         """
         scorers_coef = {fuzz.token_sort_ratio: 0.11,  # 1
@@ -236,7 +205,7 @@ class MatchingProcess:
 
         return results
 
-    def sequence_match(self, query: list | pd.Series) -> pd.DataFrame:
+    def sequence_match(self, query: list | pd.Series) -> dict:
 
         result = dict()
 
@@ -251,78 +220,7 @@ class MatchingProcess:
 
             result[name] = processed_choice
 
-        return MatchingProcess.__parse_match_results(result)
-
-    def best_sequence_match(self, query: pd.Series | list) -> pd.DataFrame:
-
-        result = pd.DataFrame()
-
-        for series_name in self.choices:
-            mapping_df = self.choices
-            self.choices = self.choices[series_name]
-
-            res = self.sequence_match(query=query)
-
-            result = pd.concat([result, res], axis=0)
-            self.choices = mapping_df
-
-        result.reset_index(drop=True, inplace=True)
-
-        if self.__drop_not_best:
-            ind_max = result.groupby(['query'])['score'].idxmax()
-            result = result.loc[ind_max, :]
-
-        result.index = result['result_index']
-        result.drop(columns='result_index', inplace=True)
-
-        if self.__add_column_name:
-            result['column'] = self.__add_column_name
-
         return result
-
-    def mapping_table(self, query: pd.Series):
-
-        # self.choice must be pd.DataFrame, not pd.Series
-        result_names = self.choices.iloc[:, 0]
-        self.choices = self.choices.iloc[:, 1:]
-
-        result = self.best_sequence_match(query=query)
-
-        result.loc[:, 'chosen'] = result_names
-        result.reset_index(drop=True, inplace=True)
-
-        return result
-
-    # disabled methods
-
-    @staticmethod
-    def __parse_match_results(match_results: dict) -> pd.DataFrame:
-        dataframe_columns = ['query', 'result', 'matched', 'score', 'result_index']
-        data = []
-
-        for value in match_results.values():
-            data.append(value)
-
-        match_results_dataframe = pd.DataFrame(data, columns=dataframe_columns)
-
-        return match_results_dataframe
-
-    def __check_mapping_results(self, matching_results: dict, query: str) -> list:
-
-        max_score_match = max(matching_results, key=matching_results.get)
-        max_score = max(matching_results.values())
-        label_matched = 'matched'
-        label_did_not_matched = 'not found'
-
-        label = label_did_not_matched if max_score < self.score_cutoff_choice else label_matched
-
-        if self.__show_results_in_terminal:
-            print('----------------')
-            print(query, ' -- ', max_score_match, f' ({label})')
-            print('----------------')
-            print(matching_results)
-            print()
-        return [query, max_score_match, label, max_score]
 
 
 def single_input_file(folder_path):
@@ -333,23 +231,6 @@ def single_input_file(folder_path):
     return file_name_to_load
 
 
-def numerated_list(func):
-    def wrapper(arg):
-        folder_list = func(arg)
-        print()
-        print(f'Files in "{arg}" displayed below')
-        print('--------------')
-        for ind, file in enumerate(folder_list):
-            print(ind + 1, '. ', file, sep='')
-        print('--------------')
-        print('Choose one file (input a number)')
-
-        return folder_list
-
-    return wrapper
-
-
-@numerated_list
 def check_excel_files_list(folder_path: str) -> list:
     extensions = ['.xlsx', '.xls', '.xlsm', '.xlsb']
     wrong = ['~$']
@@ -388,25 +269,6 @@ def find_children(file_path):
 
 def tmp(df: pd.DataFrame):
     df = df.applymap(lambda x: x.strip() if isinstance(x, str) else x)
-    return df
-
-
-def add_extracting_time_info(df: pd.DataFrame):
-    extract_timestamp = datetime.datetime.now()
-
-    df['extracting_date'] = extract_timestamp.strftime('%d.%m.%Y')
-    df['extracting_time'] = extract_timestamp.strftime('%H:%M')
-
-    return df
-
-
-def add_edit_time_info(df: pd.DataFrame, fem_folder, filename):
-    edit_timestamp = os.path.getmtime(os.path.join(fem_folder, filename))
-    datestamp = datetime.datetime.fromtimestamp(edit_timestamp)
-
-    df['edit_date'] = datestamp.strftime('%d.%m.%Y')
-    df['edit_time'] = datestamp.strftime('%H:%M')
-
     return df
 
 
@@ -450,13 +312,6 @@ def safe_dataframes_to_excel(dataframes: list,
             save_process(exist=False)
 
 
-@numerated_list
-def list_files_in_folder(folder_path_to_list: str) -> list:
-    # todo drop function if possible
-    files_list = check_excel_files_list(folder_path_to_list)
-    return files_list
-
-
 def rename_dict(a_list: list, dictionary: dict, minscore: int):
     # if column has not been found or score equals then store name to mapping
     # todo get rid!
@@ -493,6 +348,29 @@ def rename_dict(a_list: list, dictionary: dict, minscore: int):
         tmp_dict = {}
 
     return dict_for_rename
+
+
+def timer(some_process):
+    def wrapper(*args, **kwargs):
+        time_started = datetime.datetime.now()
+        some_process(*args, **kwargs)
+        time_finished = datetime.datetime.now()
+        process_time = time_finished - time_started  # TODO add time format
+        print('(', process_time, ' sec)', sep='')
+
+    return wrapper
+
+
+def process_decorator(process_function):
+    @timer
+    def wrapper(*args, **kwargs):
+        print('--------------')
+        print('Process has just started')
+        print('--------------')
+        process_function(*args, **kwargs)
+        print(Fore.GREEN + 'Finished successfully' + Style.RESET_ALL, end=' ')
+
+    return wrapper
 
 # def read_multiple_excel_files(files_path_list: list, sheet_list: list):
 #     # todo move to Folder class

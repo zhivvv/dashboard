@@ -8,7 +8,7 @@ from PyQt5.QtCore import QAbstractTableModel, QModelIndex, Qt
 
 # My modules
 from base_ui import Ui_MainWindow
-from mapping import mapping_process
+from mapping import get_mapping_table
 from calculations import calculation_process
 from extraction import extraction_for_gui
 
