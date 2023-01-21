@@ -54,7 +54,7 @@
              <string>Extraction process</string>
             </property>
             <layout class="QFormLayout" name="formLayout">
-             <item row="1" column="0">
+             <item row="1" column="0" colspan="2">
               <widget class="QLabel" name="label_15">
                <property name="text">
                 <string>Add data folder</string>
@@ -75,9 +75,16 @@
               </widget>
              </item>
              <item row="2" column="1">
-              <widget class="QToolButton" name="btn_tool_choose_folder">
+              <widget class="QToolButton" name="btn_tool_choose_fem_folder">
                <property name="text">
                 <string>...</string>
+               </property>
+              </widget>
+             </item>
+             <item row="5" column="0" colspan="2">
+              <widget class="QPushButton" name="btn_save_extraction">
+               <property name="text">
+                <string>Export to Excel</string>
                </property>
               </widget>
              </item>
@@ -100,28 +107,8 @@
                </property>
               </widget>
              </item>
-             <item row="5" column="0" colspan="2">
-              <widget class="QPushButton" name="btn_save_extraction">
-               <property name="text">
-                <string>Export to Excel</string>
-               </property>
-              </widget>
-             </item>
             </layout>
            </widget>
-          </item>
-          <item>
-           <spacer name="verticalSpacer_2">
-            <property name="orientation">
-             <enum>Qt::Vertical</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>20</width>
-              <height>40</height>
-             </size>
-            </property>
-           </spacer>
           </item>
           <item>
            <widget class="QGroupBox" name="groupBox_2">
@@ -135,14 +122,14 @@
              <string>Mapping process</string>
             </property>
             <layout class="QFormLayout" name="formLayout_2">
-             <item row="1" column="0">
+             <item row="1" column="0" colspan="2">
               <widget class="QLabel" name="label_9">
                <property name="text">
                 <string>Add mapping file</string>
                </property>
               </widget>
              </item>
-             <item row="2" column="0">
+             <item row="3" column="0">
               <widget class="QLineEdit" name="lineEdit_mapping_file">
                <property name="sizePolicy">
                 <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
@@ -167,41 +154,22 @@
                </property>
               </widget>
              </item>
-             <item row="2" column="1">
+             <item row="3" column="1">
               <widget class="QToolButton" name="btn_tool_choose_mapping_file">
                <property name="text">
                 <string>...</string>
                </property>
               </widget>
              </item>
-             <item row="3" column="0" colspan="2">
-              <widget class="QPushButton" name="btn_apply_map_2">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="minimumSize">
-                <size>
-                 <width>0</width>
-                 <height>0</height>
-                </size>
-               </property>
-               <property name="text">
-                <string>Extract mapping file</string>
-               </property>
-              </widget>
-             </item>
-             <item row="4" column="0">
+             <item row="5" column="0" colspan="2">
               <widget class="QLabel" name="label_14">
                <property name="text">
-                <string>Add data file</string>
+                <string>Add extraction file</string>
                </property>
               </widget>
              </item>
-             <item row="5" column="0">
-              <widget class="QLineEdit" name="lineEdit_datafile">
+             <item row="6" column="0">
+              <widget class="QLineEdit" name="lineEdit_data_file">
                <property name="sizePolicy">
                 <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
                  <horstretch>0</horstretch>
@@ -225,15 +193,15 @@
                </property>
               </widget>
              </item>
-             <item row="5" column="1">
-              <widget class="QToolButton" name="btn_tool_choos_data_file">
+             <item row="6" column="1">
+              <widget class="QToolButton" name="btn_tool_choose_data_file">
                <property name="text">
                 <string>...</string>
                </property>
               </widget>
              </item>
-             <item row="6" column="0" colspan="2">
-              <widget class="QPushButton" name="btn_apply_map">
+             <item row="7" column="0" colspan="2">
+              <widget class="QPushButton" name="btn_get_mapping_file">
                <property name="sizePolicy">
                 <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                  <horstretch>0</horstretch>
@@ -247,35 +215,35 @@
                 </size>
                </property>
                <property name="text">
-                <string>Apply Map</string>
+                <string>Get mapping file</string>
                </property>
               </widget>
              </item>
-             <item row="7" column="0" colspan="2">
+             <item row="8" column="0" colspan="2">
               <widget class="QPushButton" name="btn_save_mapping">
                <property name="text">
                 <string>Export to Excel</string>
                </property>
               </widget>
              </item>
-             <item row="8" column="0" colspan="2">
-              <spacer name="verticalSpacer">
-               <property name="orientation">
-                <enum>Qt::Vertical</enum>
-               </property>
-               <property name="sizeType">
-                <enum>QSizePolicy::Minimum</enum>
-               </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>20</width>
-                 <height>50</height>
-                </size>
-               </property>
-              </spacer>
-             </item>
             </layout>
            </widget>
+          </item>
+          <item>
+           <spacer name="verticalSpacer">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+            <property name="sizeType">
+             <enum>QSizePolicy::Minimum</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>20</width>
+              <height>50</height>
+             </size>
+            </property>
+           </spacer>
           </item>
          </layout>
         </item>
@@ -283,9 +251,6 @@
          <layout class="QVBoxLayout" name="verticalLayout_3">
           <item>
            <widget class="QTableView" name="table_fem_data"/>
-          </item>
-          <item>
-           <widget class="QTableWidget" name="table_mapping_data"/>
           </item>
          </layout>
         </item>

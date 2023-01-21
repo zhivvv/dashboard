@@ -26,19 +26,27 @@ class CalculationPrep:
 
 
 class Calculation:
-    def __init__(self):
+    def __init__(self, data):
         self.data = data
+
+    def case_calc(self):
+        pass
+
+    def batch_calc(self):
+        pass
 
 
 class BatchProcessing(CalculationPrep):
     def __init__(self):
         super(BatchProcessing, self).__init__()
 
+
 # todo move to another module
 def choose_excel_file(folder_path, sheet_name=0):
     file_path = os.path.join(folder_path, func.single_input_file(folder_path))
     result = pd.ExcelFile(file_path).parse(sheet_name)
     return result
+
 
 # todo move to another module
 def apply_mapping_to_fem(fillna=True):

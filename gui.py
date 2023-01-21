@@ -8,9 +8,11 @@ from PyQt5.QtCore import QAbstractTableModel, QModelIndex, Qt
 
 # My modules
 from base_ui import Ui_MainWindow
-from mapping import get_mapping_table
-from calculations import calculation_process
 from extraction import extraction_for_gui
+from mapping import get_mapping_table, apply_mapping_to_fem
+
+
+# from calculations import calculation_process
 
 
 class GUI(QtWidgets.QMainWindow):
@@ -18,37 +20,49 @@ class GUI(QtWidgets.QMainWindow):
         super(GUI, self).__init__()
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
-
         self.events()
         self.table = None
-        self.mapping = None
         self.msg = None
         self.path = None
 
     # Define events
     def events(self):
 
-        # save_table
-        self.ui.btn_save_extraction.clicked.connect(lambda: self.save_table(self.table, file_name='extraction'))
-        self.ui.btn_save_mapping.clicked.connect(lambda: self.save_table(self.mapping, file_name='mapping'))
+        # Extraction process
 
         # add data folder
-        self.ui.btn_tool_1.clicked.connect(lambda: self.get_item_path(object_to_write=self.ui.lineEdit_1,
-                                                                      item='folder'))
+        self.ui.btn_tool_choose_fem_folder.clicked.connect(
+            lambda: self.get_item_path(object_to_write=self.ui.lineEdit_datafolder,
+                                       item='folder'))
         # extract FEM
-        self.ui.btn_1.clicked.connect(self.extraction)
+        self.ui.btn_extract_fem.clicked.connect(lambda: self.extraction(self.ui.lineEdit_datafolder.text()))
+
+        # save extraction to excel
+        self.ui.btn_save_extraction.clicked.connect(lambda: self.save_table(self.table,
+                                                                            file_name='extraction'))
+
+        # Mapping process
 
         # add mapping file
-        self.ui.btn_tool_2.clicked.connect(lambda: self.get_item_path(object_to_write=self.ui.lineEdit_2,
-                                                                      item='file'))
-        # extract mapping file
+        self.ui.btn_tool_choose_mapping_file.clicked.connect(
+            lambda: self.get_item_path(object_to_write=self.ui.lineEdit_mapping_file,
+                                       item='file'))
+
+        # add extraction file
+        self.ui.btn_tool_choose_data_file.clicked.connect(
+            lambda: self.get_item_path(object_to_write=self.ui.lineEdit_data_file,
+                                       item='file'))
+
+        # get mapping file
+        self.ui.btn_get_mapping_file.clicked.connect(self.get_mapping_file)
+
+        # save mapping file to excel
+        self.ui.btn_save_mapping.clicked.connect(lambda: self.save_table(self.table,
+                                                                         file_name='mapping'))
 
         # add data file
 
-        # applymap
-        self.ui.btn_4.clicked.connect(mapping_process)
-
-        # add data file 
+        # add data file
         # self.ui.btn_export.clicked.connect(lambda: self.save_table('/Users/ivanov.ev/Desktop/', 'test'))
         # self.ui.btn_3.clicked.connect(calculation_process)
         # add event
@@ -72,18 +86,29 @@ class GUI(QtWidgets.QMainWindow):
             self.msg = CriticalMessage()
             self.msg.setInformativeText(str(e))
 
-    def extraction(self):
-        self.table = extraction_for_gui(self.ui.lineEdit_1.text())
+    def extraction(self, folder_path):
+        df = extraction_for_gui(folder_path)
+        self.set_table(df, self.ui.table_fem_data)
+        self.table = df
+
+    def set_table(self, table: pd.DataFrame, obj_name):
+
         try:
-            model = PandasModel(self.table)
-            self.ui.table_1.setModel(model)
+            model = PandasModel(table)
+            obj_name.setModel(model)
 
         except Exception as e:
             self.msg = CriticalMessage()
             self.msg.setInformativeText(str(e))
 
     def get_mapping_file(self):
-        pass
+        mapping_file, df = map(pd.read_excel, [self.ui.lineEdit_mapping_file.text(),
+                                               self.ui.lineEdit_data_file.text()])
+
+        result = get_mapping_table(df, mapping_file)
+        self.set_table(result, self.ui.table_fem_data)
+        self.table = result
+
 
     def save_table(self, table_name: pd.DataFrame, file_name='untitled'):
 
@@ -95,7 +120,7 @@ class GUI(QtWidgets.QMainWindow):
         folder_to_save = self.get_item_path(item='folder')
         path_to_save = os.path.join(folder_to_save, f'{file_name}.xlsx')
         table_name.to_excel(excel_writer=path_to_save, sheet_name=default_sheet_name)
-        Info(label=f'File successfully saved in {path_to_save}')
+        Info(label=f'File been saved to {path_to_save} successfully')
 
         #     TODO Write function that checks existence of file in selected folder
 

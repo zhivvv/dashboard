@@ -1,12 +1,14 @@
+import datetime
 import os.path
+import traceback as tb
+
+import numpy as np
+import pandas as pd
+from colorama import Fore, Style
+
 import func
 import settings
-import pandas as pd
-import traceback as tb
-import numpy as np
 from func import rename_dict
-import datetime
-from colorama import Fore, Style, Back
 
 
 def decorator_entire_process(main_process):
@@ -34,13 +36,13 @@ def decorator_file_preparing(extraction_transform_process):
     return wrapper
 
 
-def extraction_for_gui(folder):
+def extraction_for_gui(folder_path):
     errors = dict()
     result_df = None
 
-    for file in func.check_excel_files_list(folder):
+    for file in func.check_excel_files_list(folder_path):
         try:
-            fem = fem_preparing(os.path.join(folder, file))
+            fem = fem_preparing(os.path.join(folder_path, file))
             fem['input_file'] = file
         except Exception as e:
             print(Fore.RED, 'not ok', Style.RESET_ALL)
