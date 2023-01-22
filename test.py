@@ -6,6 +6,7 @@ import func
 from func import Folder
 import mapping as mp
 from func import MatchingProcess
+from calculations import move_costs_to_typecf
 
 # catalog = r''
 # data_file_name = 'extraction_29112022.xlsx'
@@ -17,19 +18,14 @@ from func import MatchingProcess
 # folder = catalog
 # func.safe_dataframes_to_excel([df], ['mapping'], folder_to_save=folder)
 
-print()
 
 if __name__ == '__main__':
-    mapping_path = r'/Users/ivanov.ev/Desktop/mapping.xlsx'
-    data_path = r'/Users/ivanov.ev/Desktop/extraction21012023.xlsx'
-    df, mapping = map(pd.read_excel, [data_path, mapping_path])
+    # mapping_path = r'/Users/ivanov.ev/Desktop/mapping.xlsx'
+    # data_path = r'/Users/ivanov.ev/Desktop/extraction22012023.xlsx'
+    data = r'/Users/ivanov.ev/Desktop/report22012023.xlsx'
+    # df, mapping = map(pd.read_excel, [data_path, mapping_path])
+    df = pd.read_excel(data)
+    df = move_costs_to_typecf(df)
 
-    path_to_save = '/Users/ivanov.ev/Desktop'
-    file_name = 'map.xlsx'
-    a = get_mapping_table(df, mapping)
-    # a.to_excel(excel_writer=os.path.join(path_to_save, file_name),
-    #            sheet_name='a',
-    #            index=False)
-    b = apply_mapping_to_fem(df, a)
 
     print()

@@ -124,7 +124,7 @@ class GUI(QtWidgets.QMainWindow):
         #     Folder to save selection
         folder_to_save = self.get_item_path(item='folder')
         path_to_save = os.path.join(folder_to_save, f'{file_name}.xlsx')
-        df.to_excel(excel_writer=path_to_save, sheet_name=default_sheet_name)
+        df.to_excel(excel_writer=path_to_save, sheet_name=default_sheet_name, index=False)
         Info(label=f'File has been saved to {path_to_save} successfully')
 
         #     TODO Write function that checks existence of file in selected folder

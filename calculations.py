@@ -21,13 +21,13 @@ class CalculationPrep:
 
 class Calculation:
     def __init__(self, data):
-        self._data = data
-        self._base_year = 2022
-        self._rate = 0.14
-        self._rate_past = 0.18
-        self._tax_rate = 0.2
-        self._amort_period = 5
-        self._effect_period = 5
+        self.data = data
+        self.base_year = 2022
+        self.rate = 0.14
+        self.rate_past = 0.18
+        self.tax_rate = 0.2
+        self.amort_period = 5
+        self.effect_period = 5
 
     # before calculation need to consolidate data to date and flows
 
@@ -41,21 +41,6 @@ class Calculation:
 class BatchProcessing(CalculationPrep):
     def __init__(self):
         super(BatchProcessing, self).__init__()
-
-
-def move_costs_to_typecf(fem: pd.DataFrame):
-    fem['typecf'] = np.where(fem['typecf'] == 'Затраты', fem['subtypecf'],
-                             fem['typecf'])
-
-    return fem
-
-
-def calculation_process():
-    # load data
-    fem = apply_mapping_to_fem(fillna=True)
-    fem = move_costs_to_typecf(fem)
-
-    return project_calculation(fem)
 
 
 def pivot_typecf(data: pd.DataFrame, column_index: list):
