@@ -6,15 +6,6 @@ import settings
 import tqdm
 import itertools
 
-# get data from file
-
-base_year = 2022
-rate = 0.14
-rate_past = 0.18
-tax_rate = 0.2
-amort_period = 5
-effect_period = 5
-
 
 class CalculationPrep:
 
@@ -24,10 +15,21 @@ class CalculationPrep:
     def __init__(self, data):
         self.data = data
 
+    def make_consolidation(self):
+        pass
+
 
 class Calculation:
     def __init__(self, data):
-        self.data = data
+        self._data = data
+        self._base_year = 2022
+        self._rate = 0.14
+        self._rate_past = 0.18
+        self._tax_rate = 0.2
+        self._amort_period = 5
+        self._effect_period = 5
+
+    # before calculation need to consolidate data to date and flows
 
     def case_calc(self):
         pass
@@ -39,48 +41,6 @@ class Calculation:
 class BatchProcessing(CalculationPrep):
     def __init__(self):
         super(BatchProcessing, self).__init__()
-
-
-# todo move to another module
-def choose_excel_file(folder_path, sheet_name=0):
-    file_path = os.path.join(folder_path, func.single_input_file(folder_path))
-    result = pd.ExcelFile(file_path).parse(sheet_name)
-    return result
-
-
-# todo move to another module
-def apply_mapping_to_fem(fillna=True):
-    fem: pd.DataFrame = choose_excel_file(settings.fem_folder_results,
-                                          sheet_name=settings.fem_sheet_name)
-    mapping: pd.DataFrame = choose_excel_file(settings.mapping_folder_results,
-                                              sheet_name=settings.mapping_sheet_name)
-
-    result = fem.copy(deep=True)
-
-    columns_in_mapping = mapping.column.unique().tolist()
-    mapping_column_names = ['query', 'chosen']
-
-    for fem_column in fem.columns:
-        if fem_column in columns_in_mapping:
-            temp_mapping = mapping.loc[mapping['column'] == fem_column,
-                                       mapping_column_names].copy()
-
-            temp_dict = (temp_mapping
-                         .set_index(mapping_column_names[0])[mapping_column_names[1]]
-                         .to_dict()
-                         )
-
-            if fillna:
-                result[fem_column] = (result[fem_column]
-                                      .map(temp_dict)
-                                      .fillna(result[fem_column])
-                                      )
-            else:
-                result[fem_column] = result[fem_column].map(temp_dict)
-
-        result.fillna('n/a', inplace=True)
-
-    return result
 
 
 def move_costs_to_typecf(fem: pd.DataFrame):

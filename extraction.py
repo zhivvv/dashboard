@@ -45,7 +45,6 @@ def extraction_for_gui(folder_path):
             fem = fem_preparing(os.path.join(folder_path, file))
             fem['input_file'] = file
         except Exception as e:
-            print(Fore.RED, 'not ok', Style.RESET_ALL)
             errors[file] = ''.join(tb.format_exception(None, e, e.__traceback__))
             continue
 
