@@ -73,7 +73,10 @@ def move_costs_to_typecf(df: pd.DataFrame):
     df['typecf'] = np.where(df['typecf'] == 'opex_capital', 'capex', df['typecf'])
     # replace service to opex
     df['typecf'] = np.where(df['typecf'] == 'service', 'opex', df['typecf'])
-
+    # costs view minus
+    df.loc[(df['typecf'] == 'capex') |
+           (df['typecf'] == 'opex') |
+           (df['typecf'] == 'tax'), 'value'] = -df['value']
     return df
 
 

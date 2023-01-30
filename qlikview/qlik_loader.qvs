@@ -1,15 +1,20 @@
-[table_name]:
-load * inline[
-col_1, col_2
-tt, 1
-tt, 1
-aa, 3
-aa, 5
-];
 
-[cross]:
-crosstable ('parameter', 'value', 1)
+set ExtactionPath = '$(vDataFolderPath)/full_report_03012023.xlsx'
+set ExtactionDataSheetName = 'full_report'
+set CalculationDataPath = '$(vDataFolderPath)/file_name.xlsx'
+set CalculationDataSheetName = 'sheet_name'
+
+
+// Add extraction data
+
+[table]:
 load *
-Resident table_name;
+from [ExtactionPath]
+(ooxml, embedded labels, table is $(ExtactionDataSheetName));
 
-Drop Table table_name;
+// Add table with calculation results
+
+// [effectiveness]:
+// load *
+// from [$(CalculationDataPath)]
+// (ooxml, embedded labels, table is $(ExtactionDataSheetName));
