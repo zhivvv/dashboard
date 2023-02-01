@@ -6,6 +6,7 @@ import func
 from func import Folder
 import mapping as mp
 from func import MatchingProcess
+from calculations import CalculationPrep
 
 # catalog = r''
 # data_file_name = 'extraction_29112022.xlsx'
@@ -20,8 +21,11 @@ from func import MatchingProcess
 
 if __name__ == '__main__':
 
-    data = r'C:\Users\ivanov.ev\Desktop\_test\results\report30012023.xlsx'
+    data = r'/Users/ivanov.ev/Desktop/report30012023.xlsx'
     # df, mapping = map(pd.read_excel, [data_path, mapping_path])
     df = pd.read_excel(data)
     df = df[df['code'] == 'U190001512']
+
+    a = CalculationPrep(df)
     print()
+

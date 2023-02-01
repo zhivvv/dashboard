@@ -1,3 +1,4 @@
+import dataclasses
 import os
 import numpy as np
 import pandas as pd
@@ -9,25 +10,44 @@ import itertools
 
 class CalculationPrep:
 
-    # data format
-    # index (year or month) | effect | capex | opex | service |
-    # add data check and write tests
     def __init__(self, data):
-        self.data = data
+        self.data: pd.DataFrame = data
+        self.capex = self.__parse_data('capex')
+        self.opex = self.__parse_data('opex')
+        self.umv = self.__parse_data('umv')
+        self.dmv = self.__parse_data('dmv')
+        self.npv = self.__parse_data('npv')
+        del self.data
 
-    def make_consolidation(self):
-        pass
+    def __parse_data(self, column_name):
+        temp = self.data.loc[self.data['typecf'] == column_name, ['year', 'value']]\
+            .groupby(by='year').sum().squeeze()
+        return temp
 
+
+
+
+
+@dataclasses.dataclass
+class CalcParam:
+    base_year = 2022
+    rate = 0.14
+    rate_past = 0.18
+    tax_rate = 0.2
+    amort_period = 5
+    effect_period = 7
 
 class Calculation:
     def __init__(self, data):
+
+        self.params = CalcParam()
         self.data = data
-        self.base_year = 2022
-        self.rate = 0.14
-        self.rate_past = 0.18
-        self.tax_rate = 0.2
-        self.amort_period = 5
-        self.effect_period = 5
+        # self.base_year = 2022
+        # self.rate = 0.14
+        # self.rate_past = 0.18
+        # self.tax_rate = 0.2
+        # self.amort_period = 5
+        # self.effect_period = 5
 
     # before calculation need to consolidate data to date and flows
 
@@ -38,9 +58,6 @@ class Calculation:
         pass
 
 
-class BatchProcessing(CalculationPrep):
-    def __init__(self):
-        super(BatchProcessing, self).__init__()
 
 
 def pivot_typecf(data: pd.DataFrame, column_index: list):
@@ -229,4 +246,4 @@ def find_years_for_for_effect(data: pd.DataFrame) -> pd.Series:
 
 
 if __name__ == '__main__':
-    calculation_process()
+    pass
